@@ -9,7 +9,7 @@ colors = PackedColorArray(6.738305e-07, 0.5758732, 0.8166205, 1, 0, 0.85490197, 
 gradient = SubResource("Gradient_uxuua")
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_nugsn"]
-radius = 64.0
+radius = 128.0
 
 [node name="Creature" type="Area2D" unique_id=1755331704]
 script = ExtResource("1_fd6ru")
@@ -21,3 +21,5 @@ texture = SubResource("GradientTexture2D_fd6ru")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1391556732]
 shape = SubResource("CircleShape2D_nugsn")
+
+[connection signal="body_entered" from="." to="." method="_on_body_entered"]
