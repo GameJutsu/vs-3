@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dldr3ok003h83" path="res://player.gd" id="1_f3sb7"]
 [ext_resource type="Script" uid="uid://c7ia4r07ojgfo" path="res://world.gd" id="1_tlwt5"]
+[ext_resource type="PackedScene" uid="uid://hw1thontpi45" path="res://enemy.tscn" id="2_aqk2v"]
 [ext_resource type="PackedScene" uid="uid://byhfa7tgt4p2j" path="res://creature.tscn" id="3_aqk2v"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_fj7yv"]
@@ -11,6 +12,7 @@ size = Vector2(96, 96)
 
 [node name="World" type="Node2D" unique_id=1369349377]
 script = ExtResource("1_tlwt5")
+enemy_scene = ExtResource("2_aqk2v")
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=321738078]
 script = ExtResource("1_f3sb7")
@@ -26,3 +28,8 @@ shape = SubResource("RectangleShape2D_tlwt5")
 [node name="Camera2D" type="Camera2D" parent="." unique_id=649479389]
 
 [node name="Creature" parent="." unique_id=1755331704 instance=ExtResource("3_aqk2v")]
+
+[node name="SpawnTimer" type="Timer" parent="." unique_id=885964119]
+autostart = true
+
+[connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]
