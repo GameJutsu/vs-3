@@ -10,6 +10,12 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tlwt5"]
 size = Vector2(96, 96)
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_aqk2v"]
+size = Vector2(112, 112)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aqk2v"]
+bg_color = Color(0.47958636, 0.66971856, 0.22701338, 1)
+
 [node name="World" type="Node2D" unique_id=1369349377]
 script = ExtResource("1_tlwt5")
 enemy_scene = ExtResource("2_aqk2v")
@@ -25,11 +31,25 @@ texture = SubResource("PlaceholderTexture2D_fj7yv")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=2143476618]
 shape = SubResource("RectangleShape2D_tlwt5")
 
-[node name="Camera2D" type="Camera2D" parent="." unique_id=649479389]
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=649479389]
+
+[node name="Hurtbox" type="Area2D" parent="Player" unique_id=1920327147]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player/Hurtbox" unique_id=864681553]
+shape = SubResource("RectangleShape2D_aqk2v")
 
 [node name="Creature" parent="." unique_id=1755331704 instance=ExtResource("3_aqk2v")]
 
 [node name="SpawnTimer" type="Timer" parent="." unique_id=885964119]
 autostart = true
 
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1423837304]
+
+[node name="HealthBar" type="ProgressBar" parent="CanvasLayer" unique_id=1116485510]
+offset_right = 1152.0
+offset_bottom = 144.0
+theme_override_styles/fill = SubResource("StyleBoxFlat_aqk2v")
+value = 100.0
+
+[connection signal="body_entered" from="Player/Hurtbox" to="Player" method="_on_hurtbox_body_entered"]
 [connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]
