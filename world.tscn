@@ -1,22 +1,28 @@
 [gd_scene format=3 uid="uid://c3q5irymhgcde"]
 
 [ext_resource type="Script" uid="uid://dldr3ok003h83" path="res://player.gd" id="1_f3sb7"]
+[ext_resource type="Script" uid="uid://c7ia4r07ojgfo" path="res://world.gd" id="1_tlwt5"]
+[ext_resource type="PackedScene" uid="uid://byhfa7tgt4p2j" path="res://creature.tscn" id="3_aqk2v"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_fj7yv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_tlwt5"]
-size = Vector2(16, 16)
+size = Vector2(96, 96)
 
 [node name="World" type="Node2D" unique_id=1369349377]
+script = ExtResource("1_tlwt5")
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=321738078]
 script = ExtResource("1_f3sb7")
 
 [node name="Sprite2D" type="Sprite2D" parent="Player" unique_id=1983803812]
-scale = Vector2(16, 16)
+position = Vector2(-4.7683716e-07, -2.861023e-06)
+scale = Vector2(95.99999, 95.99999)
 texture = SubResource("PlaceholderTexture2D_fj7yv")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=2143476618]
 shape = SubResource("RectangleShape2D_tlwt5")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=649479389]
+
+[node name="Creature" parent="." unique_id=1755331704 instance=ExtResource("3_aqk2v")]
