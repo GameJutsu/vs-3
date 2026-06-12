@@ -28,7 +28,7 @@ func _process(delta):
 				
 				# 3. The "Bite" - If we get close enough, destroy the enemy
 				if global_position.distance_to(current_enemy.global_position) < 15.0:
-					current_enemy.queue_free() # queue_free() safely deletes a node
+					current_enemy.die() # queue_free() safely deletes a node
 					current_enemy = null
 					state = State.FOLLOW # Go back to the player
 			else:

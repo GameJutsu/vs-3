@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://c83daqiv8cv36"]
+
+[ext_resource type="Script" uid="uid://dqe623orjny7h" path="res://xp_gem.gd" id="1_1yue2"]
+
+[sub_resource type="Gradient" id="Gradient_aqk2v"]
+colors = PackedColorArray(2.5990605e-06, 0.525965, 0.7571887, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_plb6h"]
+gradient = SubResource("Gradient_aqk2v")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_iafq8"]
+
+[node name="XPGem" type="Area2D" unique_id=1301904727 groups=["gem"]]
+script = ExtResource("1_1yue2")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=733713066]
+scale = Vector2(0.25, 0.25)
+texture = SubResource("GradientTexture2D_plb6h")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1487577888]
+shape = SubResource("CircleShape2D_iafq8")
