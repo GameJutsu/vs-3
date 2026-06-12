@@ -3,8 +3,9 @@ extends CharacterBody2D
 ## This script manages the player's movement, health, experience (XP), level-up progression,
 ## and collision interactions with enemies and collectible items (XP gems).
 
-# --- MOVEMENT CONSTANTS ---
-const SPEED: float = 300.0                # Movement speed in pixels per second
+# --- MOVEMENT ---
+# Changed from 'const' to 'var' so that upgrades can modify it at runtime.
+var speed: float = 300.0                  # Movement speed in pixels per second
 
 # --- HEALTH ARCHITECTURE ---
 var max_health: int = 100
@@ -20,6 +21,11 @@ var current_level: int = 1
 var current_xp: int = 0
 var xp_to_next_level: int = 100            # Total XP required to reach the next level
 @onready var xp_bar: ProgressBar = $"../CanvasLayer/XPBar"
+
+# --- UPGRADE SYSTEM ---
+# Reference to the UpgradeMenu node inside the CanvasLayer.
+# The menu handles pausing/unpausing; we just need to call open_menu() and handle the result.
+@onready var upgrade_menu = $"../CanvasLayer/UpgradeMenu"
 
 # --- INITIALIZATION ---
 # _ready() is called once when the node and its children enter the scene tree.
@@ -41,7 +47,7 @@ func _physics_process(_delta: float) -> void:
 	var direction: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 	
 	# 'velocity' is a built-in property of CharacterBody2D.
-	velocity = direction * SPEED
+	velocity = direction * speed
 	
 	# move_and_slide() is a built-in method that moves the body along the velocity vector,
 	# automatically resolving collisions (sliding along walls rather than stopping), 
@@ -114,5 +120,42 @@ func level_up() -> void:
 	xp_bar.max_value = xp_to_next_level
 	
 	print("LEVEL UP! Reached level: ", current_level)
-	# TODO: Trigger UI popup, pause game, and let the player pick an upgrade card
+	
+	# Trigger the Tactical Pause — freeze the world and show upgrade cards
+	upgrade_menu.open_menu(current_level)
 
+# =========================================================
+# UPGRADE APPLICATION
+# =========================================================
+
+# Signal callback: Connected to the UpgradeMenu's 'upgrade_selected' signal in world.tscn.
+# When the player clicks a card, this function receives the chosen UpgradeResource
+# and applies its effect using a match statement on the UpgradeType enum.
+func _on_upgrade_menu_upgrade_selected(data: UpgradeResource) -> void:
+	match data.type:
+		UpgradeResource.UpgradeType.PLAYER_SPEED:
+			# Permanently increase movement speed
+			speed += data.value
+			print("Speed increased to: ", speed)
+		
+		UpgradeResource.UpgradeType.CREATURE_ATTACK_SPEED:
+			# Boost the companion creature's attack lunge speed.
+			# We grab the creature reference from the World node (our parent).
+			var creature = get_parent().get_node("Creature")
+			if creature != null:
+				creature.attack_speed += data.value
+				print("Creature attack speed increased to: ", creature.attack_speed)
+		
+		UpgradeResource.UpgradeType.HEAL_PLAYER:
+			# Restore HP instantly, clamped to max_health so we don't overheal
+			current_health = clampi(current_health + int(data.value), 0, max_health)
+			health_bar.value = current_health
+			print("Healed to: ", current_health)
+		
+		UpgradeResource.UpgradeType.MAX_HEALTH:
+			# Permanently raise the HP ceiling and heal by the same amount
+			max_health += int(data.value)
+			current_health += int(data.value)
+			health_bar.max_value = max_health
+			health_bar.value = current_health
+			print("Max health increased to: ", max_health)

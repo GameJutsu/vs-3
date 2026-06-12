@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="UpgradeResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_resource.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+title = "Feral Instinct"
+description = "Your companion attacks 30% faster. Shred through the swarm."
+type = 1
+value = 2.5

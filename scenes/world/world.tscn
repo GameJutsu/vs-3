@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://c7ia4r07ojgfo" path="res://scenes/world/world.gd" id="1_tlwt5"]
 [ext_resource type="PackedScene" uid="uid://hw1thontpi45" path="res://entities/enemy/enemy.tscn" id="2_aqk2v"]
 [ext_resource type="PackedScene" uid="uid://byhfa7tgt4p2j" path="res://entities/creature/creature.tscn" id="3_aqk2v"]
+[ext_resource type="PackedScene" path="res://ui/upgrade_menu.tscn" id="5_upgrade"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_fj7yv"]
 
@@ -73,7 +74,11 @@ grow_horizontal = 0
 theme_override_styles/fill = SubResource("StyleBoxFlat_036b0")
 value = 37.07
 
+[node name="UpgradeMenu" parent="CanvasLayer" instance=ExtResource("5_upgrade")]
+
 [connection signal="area_entered" from="Player/Hurtbox" to="Player" method="_on_hurtbox_area_entered"]
 [connection signal="body_entered" from="Player/Hurtbox" to="Player" method="_on_hurtbox_body_entered"]
 [connection signal="area_entered" from="Player/MagnetRadius" to="Player" method="_on_magnet_radius_area_entered"]
 [connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]
+[connection signal="upgrade_selected" from="CanvasLayer/UpgradeMenu" to="Player" method="_on_upgrade_menu_upgrade_selected"]
+
