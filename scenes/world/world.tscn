@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://c3q5irymhgcde"]
 
-[ext_resource type="Script" uid="uid://dldr3ok003h83" path="res://player.gd" id="1_f3sb7"]
-[ext_resource type="Script" uid="uid://c7ia4r07ojgfo" path="res://world.gd" id="1_tlwt5"]
-[ext_resource type="PackedScene" uid="uid://hw1thontpi45" path="res://enemy.tscn" id="2_aqk2v"]
-[ext_resource type="PackedScene" uid="uid://byhfa7tgt4p2j" path="res://creature.tscn" id="3_aqk2v"]
+[ext_resource type="Script" uid="uid://dldr3ok003h83" path="res://entities/player/player.gd" id="1_f3sb7"]
+[ext_resource type="Script" uid="uid://c7ia4r07ojgfo" path="res://scenes/world/world.gd" id="1_tlwt5"]
+[ext_resource type="PackedScene" uid="uid://hw1thontpi45" path="res://entities/enemy/enemy.tscn" id="2_aqk2v"]
+[ext_resource type="PackedScene" uid="uid://byhfa7tgt4p2j" path="res://entities/creature/creature.tscn" id="3_aqk2v"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_fj7yv"]
 

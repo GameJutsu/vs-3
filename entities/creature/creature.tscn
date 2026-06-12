@@ -1,6 +1,6 @@
-[gd_scene format=3 uid="uid://kir3jfbi7h64"]
+[gd_scene format=3 uid="uid://byhfa7tgt4p2j"]
 
-[ext_resource type="Script" path="res://creature.gd" id="1_fd6ru"]
+[ext_resource type="Script" uid="uid://dlgtdvyob87jt" path="res://entities/creature/creature.gd" id="1_fd6ru"]
 
 [sub_resource type="Gradient" id="Gradient_uxuua"]
 colors = PackedColorArray(6.738305e-07, 0.5758732, 0.8166205, 1, 0, 0.85490197, 0.7372549, 1)
