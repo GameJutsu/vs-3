@@ -19,6 +19,8 @@ config/icon="res://assets/icon.svg"
 
 SoundManager="*res://scripts/sound_manager.gd"
 GlobalStats="*res://scripts/global_stats.gd"
+EventBus="*res://scripts/event_bus.gd"
+
 
 [display]
 

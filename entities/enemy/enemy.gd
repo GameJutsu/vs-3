@@ -22,7 +22,6 @@ extends CharacterBody2D
 
 # --- PRELOADED RESOURCES ---
 const XP_GEM_SCENE: PackedScene = preload("res://items/xp_gem/xp_gem.tscn")
-const DAMAGE_NUMBER_SCENE: PackedScene = preload("res://ui/damage_number.tscn")
 const HIT_FLASH_SHADER: Shader = preload("res://assets/shaders/hit_flash.gdshader")
 
 # --- INTERNAL STATE ---
@@ -129,16 +128,13 @@ func _flash_white() -> void:
 
 # --- DAMAGE NUMBER ---
 func _spawn_damage_number(amount: int) -> void:
-	var dmg_num: Label = DAMAGE_NUMBER_SCENE.instantiate()
-	dmg_num.text = str(amount)
-	dmg_num.global_position = global_position + Vector2(0, -30)
-	get_parent().call_deferred("add_child", dmg_num)
+	EventBus.float_text_requested.emit(str(amount), global_position + Vector2(0, -30), Color.WHITE)
+
 
 # --- DEATH & CLEANUP ---
 func die() -> void:
-	# 1. Notify the player's kill counter
-	if target_node != null and target_node.has_method("register_kill"):
-		target_node.register_kill()
+	# 1. Notify the EventBus
+	EventBus.enemy_died.emit(self, xp_value)
 	
 	# 2. Split into smaller enemies if configured (Splitter archetype)
 	if splits_on_death and split_scene != null:

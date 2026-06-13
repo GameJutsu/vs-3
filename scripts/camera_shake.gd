@@ -11,6 +11,9 @@ extends Camera2D
 # --- INTERNAL STATE ---
 var trauma: float = 0.0                                # Current trauma level (0.0 = calm, 1.0 = max)
 
+func _ready() -> void:
+	EventBus.camera_shake_requested.connect(add_trauma)
+
 func _process(delta: float) -> void:
 	if trauma > 0.0:
 		# Decay trauma over time so the shake naturally settles

@@ -12,12 +12,8 @@ const TREE_SCENE: PackedScene = preload("res://entities/environment/tree_obstacl
 # --- CHILD NODE REFERENCES ---
 @onready var player: CharacterBody2D = $Player
 @onready var wave_manager: Node = $WaveManager
-@onready var timer_label: Label = $CanvasLayer/TimerLabel
-@onready var boss_health_bar: ProgressBar = $CanvasLayer/BossHealthBar
+@onready var hud: HUDController = $CanvasLayer
 
-# --- SCREEN OVERLAYS ---
-@onready var game_over_screen: ColorRect = $CanvasLayer/GameOverScreen
-@onready var victory_screen: ColorRect = $CanvasLayer/VictoryScreen
 
 # --- INTERNAL STATE ---
 var time_remaining: float = 300.0   # 5-minute countdown (300 seconds)
@@ -33,20 +29,15 @@ func _ready() -> void:
 	# Dependency Injection: Tell the wave manager who the player is
 	wave_manager.player = player
 	
-	# Hide overlays and boss HP bar
-	game_over_screen.hide()
-	victory_screen.hide()
-	boss_health_bar.hide()
+	# Initialize HUD connections to player
+	hud.setup_connections(player)
 	
 	# Connect player death signal
 	if player.has_signal("died"):
 		player.died.connect(_on_player_died)
 		
-	# Connect overlay button signals
-	$CanvasLayer/GameOverScreen/VBox/HBox/RetryBtn.pressed.connect(_on_retry_pressed)
-	$CanvasLayer/GameOverScreen/VBox/HBox/MenuBtn.pressed.connect(_on_menu_pressed)
-	$CanvasLayer/VictoryScreen/VBox/HBox/PlayAgainBtn.pressed.connect(_on_retry_pressed)
-	$CanvasLayer/VictoryScreen/VBox/HBox/MenuBtn.pressed.connect(_on_menu_pressed)
+	# Connect global EventBus events
+	EventBus.float_text_requested.connect(_on_float_text_requested)
 	
 	# Phase 5: World boundaries, trees, and minimap
 	_setup_map_boundaries()
@@ -62,7 +53,7 @@ func _process(delta: float) -> void:
 	time_remaining = maxf(time_remaining - delta, 0.0)
 	var minutes: int = int(time_remaining) / 60
 	var seconds: int = int(time_remaining) % 60
-	timer_label.text = "%02d:%02d" % [minutes, seconds]
+	hud.timer_label.text = "%02d:%02d" % [minutes, seconds]
 	
 	# Update boss health bar if a boss is alive
 	_update_boss_health_bar()
@@ -80,14 +71,14 @@ func _update_boss_health_bar() -> void:
 		_boss_spawned = true
 		var boss: CharacterBody2D = bosses[0] as CharacterBody2D
 		if boss != null and is_instance_valid(boss):
-			boss_health_bar.show()
-			boss_health_bar.max_value = boss.max_hp
-			boss_health_bar.value = boss.current_hp
+			hud.boss_health_bar.show()
+			hud.boss_health_bar.max_value = boss.max_hp
+			hud.boss_health_bar.value = boss.current_hp
 		else:
-			boss_health_bar.hide()
+			hud.boss_health_bar.hide()
 	else:
-		if boss_health_bar.visible:
-			boss_health_bar.hide()
+		if hud.boss_health_bar.visible:
+			hud.boss_health_bar.hide()
 		# If the boss was spawned but is now gone, player has won!
 		if _boss_spawned and not is_game_over:
 			_on_victory()
@@ -96,35 +87,15 @@ func _update_boss_health_bar() -> void:
 func _on_player_died() -> void:
 	is_game_over = true
 	get_tree().paused = true
-	
-	# Update stats on overlay
-	game_over_screen.get_node("VBox/Kills").text = "Total Kills: " + str(player.kill_count)
-	
-	# Calculate elapsed survival time
 	var time_survived: float = 300.0 - time_remaining
-	var minutes: int = int(time_survived) / 60
-	var seconds: int = int(time_survived) % 60
-	game_over_screen.get_node("VBox/Time").text = "Time Survived: %02d:%02d" % [minutes, seconds]
-	
-	game_over_screen.show()
+	hud.show_game_over(player.kill_count, time_survived)
 
 # --- VICTORY STATE ---
 func _on_victory() -> void:
 	is_game_over = true
 	get_tree().paused = true
-	
-	# Update stats on overlay
-	victory_screen.get_node("VBox/Kills").text = "Final Kills: " + str(player.kill_count)
-	victory_screen.show()
+	hud.show_victory(player.kill_count)
 
-# --- BUTTON EVENT HANDLERS ---
-func _on_retry_pressed() -> void:
-	get_tree().paused = false
-	get_tree().reload_current_scene()
-
-func _on_menu_pressed() -> void:
-	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/main_menu/main_menu.tscn")
 
 # --- MAP BOUNDARIES ---
 func _setup_map_boundaries() -> void:
@@ -145,6 +116,15 @@ func _setup_map_boundaries() -> void:
 		col.shape = shape
 		wall.add_child(col)
 		add_child(wall)
+
+# --- GLOBAL EVENT BUS CALLBACKS ---
+func _on_float_text_requested(text: String, pos: Vector2, color: Color) -> void:
+	var label: Label = preload("res://ui/damage_number.tscn").instantiate()
+	label.text = text
+	label.modulate = color
+	label.global_position = pos
+	call_deferred("add_child", label)
+
 
 func _draw() -> void:
 	# Draw map border - visible boundary indicator

@@ -4,6 +4,12 @@ extends CharacterBody2D
 ## and collision interactions with enemies and collectible items (XP gems).
 
 signal died
+signal health_changed(current_health: int, max_health: int)
+signal xp_changed(current_xp: int, xp_to_next_level: int)
+signal level_up_triggered(new_level: int)
+signal kills_changed(new_kill_count: int)
+signal active_companion_changed(companion_name: String)
+signal stats_updated(projectiles: int, fire_rate: float, aoe: float, velocity: float, speed: float, weapon_name: String)
 
 # --- MOVEMENT ---
 # Changed from 'const' to 'var' so that upgrades can modify it at runtime.
@@ -13,31 +19,18 @@ signal died
 @export var max_health: int = 100
 var current_health: int = 100
 
-# @onready variables wait until the scene tree is fully loaded before trying to locate paths.
-# This avoids "Node not found" errors when the script initializes.
-# Using relative NodePath (`$"../CanvasLayer/HealthBar"`) looks up the tree for the UI element.
-@onready var health_bar: ProgressBar = $"../CanvasLayer/HealthBar"
-
 # --- XP ARCHITECTURE ---
 var current_level: int = 1
 var current_xp: int = 0
 @export var xp_to_next_level: int = 100            # Total XP required to reach the next level
-@onready var xp_bar: ProgressBar = $"../CanvasLayer/XPBar"
 
-# --- UPGRADE SYSTEM ---
-@onready var upgrade_menu = $"../CanvasLayer/UpgradeMenu"
-
-# --- CAMERA SHAKE ---
-# Reference to the Camera2D which has the camera_shake.gd script attached.
-@onready var camera: Camera2D = $Camera2D
+# --- HUD REFERENCES ---
+@onready var hud: HUDController = $"../CanvasLayer"
 
 # --- KILL COUNTER ---
 var kill_count: int = 0
-@onready var kill_label: Label = $"../CanvasLayer/KillLabel"
-@onready var stats_label: Label = $"../CanvasLayer/StatsLabel"
 
 # --- COMPANION ROSTER ---
-@onready var companion_label: Label = $"../CanvasLayer/CompanionLabel"
 var roster: Array[String] = ["rattata"]
 var active_creature_index: int = 0
 var roster_manager: RosterManager = null
@@ -65,13 +58,8 @@ var debug_mode: bool = false
 
 
 func _ready() -> void:
-	# Synchronize our initial stats with the UI Progress Bar values
-	health_bar.max_value = max_health
-	health_bar.value = current_health
-	
-	xp_bar.max_value = xp_to_next_level
-	xp_bar.value = current_xp
-	update_companion_hud()
+	# Connect global EventBus events
+	EventBus.enemy_died.connect(_on_enemy_died)
 	
 	# Keep track of original sprite scale for squash/stretch lerping
 	_base_sprite_scale = sprite.scale
@@ -172,11 +160,7 @@ func cycle_creature() -> void:
 		
 	# Check swap cooldown
 	if swap_cooldown_timer > 0.0:
-		var label: Label = preload("res://ui/damage_number.tscn").instantiate()
-		label.text = "SWAP COOLDOWN!"
-		label.modulate = Color(1.0, 0.3, 0.3, 1.0)
-		label.global_position = global_position + Vector2(-60, -50)
-		get_parent().call_deferred("add_child", label)
+		EventBus.float_text_requested.emit("SWAP COOLDOWN!", global_position + Vector2(-60, -50), Color(1.0, 0.3, 0.3, 1.0))
 		return
 		
 	active_creature_index = (active_creature_index + 1) % roster.size()
@@ -216,15 +200,14 @@ func _on_hurtbox_body_entered(body: Node2D) -> void:
 
 # Function to handle player damage and update UI
 func take_damage(amount: int) -> void:
-	current_health -= amount
-	health_bar.value = current_health
+	current_health = clampi(current_health - amount, 0, max_health)
+	health_changed.emit(current_health, max_health)
 	
 	# Play damage sound effect
 	SoundManager.play_sound("player_damage")
 	
-	# Trigger a heavy camera shake — the player just got hit!
-	if camera.has_method("add_trauma"):
-		camera.add_trauma(0.6)
+	# Trigger camera shake via EventBus
+	EventBus.camera_shake_requested.emit(0.6)
 	
 	if current_health <= 0:
 		died.emit()
@@ -257,7 +240,7 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 # Handles HP healing
 func heal(amount: int) -> void:
 	current_health = clampi(current_health + amount, 0, max_health)
-	health_bar.value = current_health
+	health_changed.emit(current_health, max_health)
 	print("Healed by ", amount, ", HP is now: ", current_health)
 
 # Handles XP gains and progression math
@@ -268,8 +251,7 @@ func gain_xp(amount: int) -> void:
 	if current_xp >= xp_to_next_level:
 		level_up()
 	
-	# Update the UI progress bar representation
-	xp_bar.value = current_xp
+	xp_changed.emit(current_xp, xp_to_next_level)
 
 # Progression logic when leveling up
 func level_up() -> void:
@@ -279,25 +261,24 @@ func level_up() -> void:
 	# Increase the difficulty/XP required for the next level by 50%
 	xp_to_next_level = int(xp_to_next_level * 1.5) 
 	
-	# Update progress bar limits
-	xp_bar.max_value = xp_to_next_level
-	
 	print("LEVEL UP! Reached level: ", current_level)
 	
 	# Play level up sound and burst particles
 	SoundManager.play_sound("level_up")
 	_spawn_level_up_particles()
 	
+	level_up_triggered.emit(current_level)
+	
 	# Trigger the Tactical Pause — freeze the world and show upgrade cards
 	if debug_mode:
 		# Auto-select a random upgrade instead of showing the menu
-		var pool = upgrade_menu.upgrade_pool.duplicate()
-		pool.shuffle()
-		if pool.size() > 0:
-			_on_upgrade_menu_upgrade_selected(pool[0])
-			print("[Debug] Auto-selected upgrade: ", pool[0].title)
+		if hud != null and hud.upgrade_menu != null:
+			var pool = hud.upgrade_menu.upgrade_pool.duplicate()
+			pool.shuffle()
+			if pool.size() > 0:
+				_on_upgrade_menu_upgrade_selected(pool[0])
+				print("[Debug] Auto-selected upgrade: ", pool[0].title)
 		return
-	upgrade_menu.open_menu(current_level, roster)
 
 func _spawn_level_up_particles() -> void:
 	var particles: CPUParticles2D = CPUParticles2D.new()
@@ -350,17 +331,14 @@ func _on_upgrade_menu_upgrade_selected(data: UpgradeResource) -> void:
 				print("Companion follow speed increased to: ", companion.follow_speed)
 		
 		UpgradeResource.UpgradeType.HEAL_PLAYER:
-			# Restore HP instantly, clamped to max_health so we don't overheal
 			current_health = clampi(current_health + int(data.value), 0, max_health)
-			health_bar.value = current_health
+			health_changed.emit(current_health, max_health)
 			print("Healed to: ", current_health)
 		
 		UpgradeResource.UpgradeType.MAX_HEALTH:
-			# Permanently raise the HP ceiling and heal by the same amount
 			max_health += int(data.value)
 			current_health += int(data.value)
-			health_bar.max_value = max_health
-			health_bar.value = current_health
+			health_changed.emit(current_health, max_health)
 			print("Max health increased to: ", max_health)
 			
 		UpgradeResource.UpgradeType.UNLOCK_CREATURE:
@@ -431,22 +409,21 @@ func evolve_companion(base_id: String, evolved_id: String) -> void:
 		_trigger_evolution_flash()
 		_spawn_evolution_particles(spawn_pos)
 		
-		# Banner text
-		var label: Label = preload("res://ui/damage_number.tscn").instantiate()
-		label.text = base_id.to_upper() + " EVOLVED INTO " + evolved_id.to_upper() + "!"
-		label.modulate = Color(1.0, 0.85, 0.1, 1.0) # Golden yellow
-		label.global_position = spawn_pos + Vector2(-120, -70)
-		get_parent().call_deferred("add_child", label)
+		# Banner text via EventBus
+		EventBus.float_text_requested.emit(
+			base_id.to_upper() + " EVOLVED INTO " + evolved_id.to_upper() + "!",
+			spawn_pos + Vector2(-120, -70),
+			Color(1.0, 0.85, 0.1, 1.0)
+		)
 		
 		update_companion_hud()
 
 func _trigger_evolution_flash() -> void:
-	var canvas = $"../CanvasLayer"
-	if canvas != null:
+	if hud != null:
 		var flash = ColorRect.new()
 		flash.color = Color(1.0, 1.0, 1.0, 1.0)
 		flash.anchors_preset = 15 # Full screen
-		canvas.add_child(flash)
+		hud.add_child(flash)
 		
 		var tween = create_tween()
 		tween.tween_property(flash, "modulate:a", 0.0, 0.5)
@@ -497,23 +474,17 @@ func unlock_creature(new_id: String) -> void:
 		if roster_manager != null:
 			roster_manager.deploy_companion(new_id, spawn_pos, self)
 			
-		# Spawn floating pop message on player's position
-		var label: Label = preload("res://ui/damage_number.tscn").instantiate()
-		label.text = "UNLOCKED: " + new_id.to_upper() + "!"
-		label.global_position = global_position + Vector2(-60, -50)
-		get_parent().call_deferred("add_child", label)
+		# Spawn floating pop message via EventBus
+		EventBus.float_text_requested.emit(
+			"UNLOCKED: " + new_id.to_upper() + "!",
+			global_position + Vector2(-60, -50),
+			Color(0.18, 0.76, 1.0, 1.0)
+		)
 	update_companion_hud()
 
 func update_companion_hud() -> void:
-	if companion_label != null:
-		var roster_strings: Array = []
-		for i in range(roster.size()):
-			var c = roster[i].to_upper()
-			if i == active_creature_index:
-				roster_strings.append("[" + c + "]")
-			else:
-				roster_strings.append(c)
-		companion_label.text = "🐾 ROSTER: " + ", ".join(roster_strings)
+	var companion_name = roster[active_creature_index] if roster.size() > 0 else "NONE"
+	active_companion_changed.emit(companion_name)
 
 # =========================================================
 # KILL TRACKING
@@ -522,44 +493,29 @@ func update_companion_hud() -> void:
 # Called externally (e.g. by World or signals) when an enemy is confirmed killed.
 func register_kill() -> void:
 	kill_count += 1
-	kill_label.text = str(kill_count)
+	kills_changed.emit(kill_count)
 	
-	# Subtle camera shake on each kill for micro-feedback
-	if camera.has_method("add_trauma"):
-		camera.add_trauma(0.1)
+	# Subtle camera shake on each kill for micro-feedback via EventBus
+	EventBus.camera_shake_requested.emit(0.1)
+
+# Connected to global EventBus event
+func _on_enemy_died(_enemy: CharacterBody2D, _xp: int) -> void:
+	register_kill()
 
 # =========================================================
 # LIVE STATS HUD
 # =========================================================
 
 func _update_stats_hud() -> void:
-	if stats_label == null:
-		return
 	var weapon_name = "Maglev Cube" if GlobalStats.selected_character == "vaibhav" else "Deck"
-	var companion_name = roster[active_creature_index].to_upper() if roster.size() > 0 else "NONE"
-	stats_label.text = """🎯 Projectiles: %d
-⚡ Fire Rate: %.2fx
-💥 AoE: %.2fx
-🚀 Velocity: %.2fx
-🏃 Speed: %d
-❤️ HP: %d/%d
-🐾 Active: %s
-⚔️ Weapon: %s
-🎮 Level: %d""" % [
+	stats_updated.emit(
 		GlobalStats.global_projectiles,
 		GlobalStats.global_fire_rate_mult,
 		GlobalStats.global_aoe_radius,
 		GlobalStats.global_velocity_mult,
-		int(speed),
-		current_health, max_health,
-		companion_name,
-		weapon_name,
-		current_level
-	]
-	if auto_fire:
-		stats_label.text += "\n🔫 AUTO-FIRE ON"
-	if debug_mode:
-		stats_label.text += "\n🤖 AUTO-UPGRADE ON"
+		speed,
+		weapon_name
+	)
 
 # =========================================================
 # DEBUG HELPERS
