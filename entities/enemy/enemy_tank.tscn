@@ -1,0 +1,24 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://bay7n4af1g781" path="res://entities/enemy/enemy.gd" id="1_script"]
+
+[sub_resource type="Gradient" id="Gradient_tank"]
+colors = PackedColorArray(0.2, 0.3, 0.9, 1, 0.1, 0.5, 0.8, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_tank"]
+gradient = SubResource("Gradient_tank")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_tank"]
+radius = 55.0
+
+[node name="EnemyTank" type="CharacterBody2D" groups=["enemy"]]
+script = ExtResource("1_script")
+speed = 50.0
+max_hp = 200
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(1.4, 1.4)
+texture = SubResource("GradientTexture2D_tank")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_tank")

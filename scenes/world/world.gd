@@ -1,56 +1,50 @@
 extends Node2D
 ## World Controller Script
-## This script coordinates the main game loop: initializing connections between nodes,
-## managing the player and creature companion, and spawning enemies periodically around the player.
-
-# --- EXPORTED RESOURCES ---
-# PackedScene represents a saved scene file (like enemy.tscn) that we can load and instantiate.
-# Exporting this allows developers to assign the Enemy scene in the Godot Editor Inspector.
-@export var enemy_scene: PackedScene
+## Orchestrates the main game loop: initializes node connections, manages the survival timer,
+## and delegates enemy spawning to the WaveManager.
 
 # --- CHILD NODE REFERENCES ---
-# '@onready' variables load when the game starts. 
-# The '$Name' syntax is a shorthand shortcut for 'get_node("Name")'.
 @onready var player: CharacterBody2D = $Player
 @onready var creature: Area2D = $Creature
+@onready var wave_manager: Node = $WaveManager
+@onready var timer_label: Label = $CanvasLayer/TimerLabel
+@onready var boss_health_bar: ProgressBar = $CanvasLayer/BossHealthBar
+
+# --- INTERNAL STATE ---
+var elapsed_time: float = 0.0
 
 # --- INITIALIZATION ---
 func _ready() -> void:
-	# Dependency Injection: Pass the player's object reference to the companion creature.
-	# This lets the creature know who to follow and protect without needing hardcoded paths.
+	# Dependency Injection: Tell the creature and wave manager who the player is
 	creature.target_node = player
+	wave_manager.player = player
+	
+	# Hide boss health bar until a boss spawns
+	boss_health_bar.hide()
 
-# --- TIMED EVENTS (SPAWNER) ---
-# Signal callback: Connected to the Timer node's 'timeout' signal.
-# Triggered automatically every time the spawn timer count hits zero.
-func _on_spawn_timer_timeout() -> void:
-	# Guard clause: Prevents game crashes if the developer forgot to assign the enemy_scene in the Inspector
-	if enemy_scene == null:
-		return 
-		
-	# 1. Create a live object instance of the Enemy scene in memory
-	var new_enemy: CharacterBody2D = enemy_scene.instantiate()
+# --- FRAME UPDATE ---
+func _process(delta: float) -> void:
+	# Update the survival timer display
+	elapsed_time += delta
+	var minutes: int = int(elapsed_time) / 60
+	var seconds: int = int(elapsed_time) % 60
+	timer_label.text = "%02d:%02d" % [minutes, seconds]
 	
-	# 2. Spawning Math: Spawn enemies in a circle around the player just off-screen
-	# - spawn_radius: 600 pixels is far enough to hide spawning from the player's view
-	var spawn_radius: float = 600.0
-	
-	# - randf() returns a random float between 0.0 and 1.0
-	# - TAU is a math constant equal to 2 * PI (approx. 6.283), representing a full 360-degree circle in radians
-	var random_angle: float = randf() * TAU
-	
-	# - Use Trigonometry (sine and cosine) to convert polar coordinates (angle + radius) into Cartesian coordinates (X + Y)
-	#   x = center_x + cos(angle) * radius
-	#   y = center_y + sin(angle) * radius
-	var spawn_x: float = player.global_position.x + cos(random_angle) * spawn_radius
-	var spawn_y: float = player.global_position.y + sin(random_angle) * spawn_radius
-	
-	# 3. Position the new enemy at the calculated coordinates
-	new_enemy.global_position = Vector2(spawn_x, spawn_y)
-	
-	# 4. Inject the player reference into the enemy so they know whom to hunt
-	new_enemy.target_node = player
-	
-	# 5. Add the enemy node to the World scene tree so it renders and starts running its physics loop
-	add_child(new_enemy)
+	# Update boss health bar if a boss is alive
+	_update_boss_health_bar()
 
+# --- BOSS HEALTH BAR ---
+# Scans the scene for any node in the "boss" group and displays its HP.
+func _update_boss_health_bar() -> void:
+	var bosses: Array[Node] = get_tree().get_nodes_in_group("boss")
+	if bosses.size() > 0:
+		var boss: CharacterBody2D = bosses[0] as CharacterBody2D
+		if boss != null and is_instance_valid(boss):
+			boss_health_bar.show()
+			boss_health_bar.max_value = boss.max_hp
+			boss_health_bar.value = boss.current_hp
+		else:
+			boss_health_bar.hide()
+	else:
+		if boss_health_bar.visible:
+			boss_health_bar.hide()

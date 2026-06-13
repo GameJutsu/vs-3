@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://byhfa7tgt4p2j" path="res://entities/creature/creature.tscn" id="3_aqk2v"]
 [ext_resource type="PackedScene" path="res://ui/upgrade_menu.tscn" id="5_upgrade"]
 [ext_resource type="Script" path="res://scripts/camera_shake.gd" id="6_shake"]
+[ext_resource type="Script" path="res://scripts/wave_manager.gd" id="7_wave"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_fj7yv"]
 
@@ -24,9 +25,20 @@ bg_color = Color(0.47958636, 0.66971856, 0.22701338, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_036b0"]
 bg_color = Color(0.06913035, 0.29973587, 0.5644954, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_boss_fill"]
+bg_color = Color(0.75, 0.05, 0.05, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.1, 0.1, 0.1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
 [node name="World" type="Node2D" unique_id=1369349377]
 script = ExtResource("1_tlwt5")
-enemy_scene = ExtResource("2_aqk2v")
 
 [node name="Player" type="CharacterBody2D" parent="." unique_id=321738078]
 script = ExtResource("1_f3sb7")
@@ -54,8 +66,8 @@ shape = SubResource("CircleShape2D_aqk2v")
 
 [node name="Creature" parent="." unique_id=1755331704 instance=ExtResource("3_aqk2v")]
 
-[node name="SpawnTimer" type="Timer" parent="." unique_id=885964119]
-autostart = true
+[node name="WaveManager" type="Node" parent="."]
+script = ExtResource("7_wave")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1423837304]
 
@@ -91,11 +103,41 @@ theme_override_font_sizes/font_size = 22
 text = "0"
 horizontal_alignment = 2
 
+[node name="TimerLabel" type="Label" parent="CanvasLayer"]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -100.0
+offset_top = 70.0
+offset_right = 100.0
+offset_bottom = 110.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1.0, 1.0, 1.0, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 28
+text = "00:00"
+horizontal_alignment = 1
+
+[node name="BossHealthBar" type="ProgressBar" parent="CanvasLayer"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -400.0
+offset_top = -60.0
+offset_right = 400.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/fill = SubResource("StyleBoxFlat_boss_fill")
+value = 100.0
+
 [node name="UpgradeMenu" parent="CanvasLayer" instance=ExtResource("5_upgrade")]
 
 [connection signal="area_entered" from="Player/Hurtbox" to="Player" method="_on_hurtbox_area_entered"]
 [connection signal="body_entered" from="Player/Hurtbox" to="Player" method="_on_hurtbox_body_entered"]
 [connection signal="area_entered" from="Player/MagnetRadius" to="Player" method="_on_magnet_radius_area_entered"]
-[connection signal="timeout" from="SpawnTimer" to="." method="_on_spawn_timer_timeout"]
 [connection signal="upgrade_selected" from="CanvasLayer/UpgradeMenu" to="Player" method="_on_upgrade_menu_upgrade_selected"]
 

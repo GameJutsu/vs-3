@@ -43,27 +43,34 @@ graph TD
     Hurtbox["Area2D: Hurtbox"]
     Magnet["Area2D: MagnetRadius"]
     Creature["Area2D: Creature"]
-    Enemy["CharacterBody2D: Enemy"]
+    Enemy["CharacterBody2D: Enemy (Variants & Boss)"]
     Gem["Area2D: XPGem"]
     Canvas["CanvasLayer"]
     HPBar["ProgressBar: HealthBar"]
     XPBar["ProgressBar: XPBar"]
-    UpgradeMenu["ColorRect: UpgradeMenu (Upcoming)"]
-    Timer["Timer: SpawnTimer"]
+    KillLabel["Label: KillLabel"]
+    TimerLabel["Label: TimerLabel"]
+    BossHealthBar["ProgressBar: BossHealthBar"]
+    UpgradeMenu["Control: UpgradeMenu"]
+    WaveManager["Node: WaveManager"]
 
     World --> Player
     World --> Creature
-    World --> Timer
+    World --> WaveManager
     World --> Canvas
     Player --> Hurtbox
     Player --> Magnet
+    Player --> Camera2D
     Canvas --> HPBar
     Canvas --> XPBar
+    Canvas --> KillLabel
+    Canvas --> TimerLabel
+    Canvas --> BossHealthBar
     Canvas --> UpgradeMenu
 
-    Timer -.->|"timeout signal"| World
-    World -.->|"Spawns"| Enemy
+    WaveManager -.->|"Spawns (time-based)"| Enemy
     Enemy -.->|"die() → drops"| Gem
+    Enemy -.->|"register_kill() → updates"| KillLabel
 
     Hurtbox -.->|"body_entered (enemy)"| Player
     Hurtbox -.->|"area_entered (gem)"| Player
@@ -77,14 +84,22 @@ graph TD
 
 ```text
 res://
-├── assets/                     # Global art, sounds, fonts
-│   └── icon.svg
+├── assets/                     # Global art, shaders, sound templates
+│   └── shaders/
+│       └── hit_flash.gdshader  # Shader for damage flashes
+├── data/                       # Game database resources
+│   └── upgrades/               # UpgradeResource data files (.tres)
 ├── entities/                   # Characters & interactive actors
 │   ├── player/
 │   │   └── player.gd
 │   ├── enemy/
-│   │   ├── enemy.tscn
-│   │   └── enemy.gd
+│   │   ├── enemy.tscn          # Base Grunt enemy
+│   │   ├── enemy.gd
+│   │   ├── enemy_sprinter.tscn # Fast enemy
+│   │   ├── enemy_tank.tscn     # High HP enemy
+│   │   ├── enemy_splitter.tscn # Splits into splitlings
+│   │   ├── enemy_splitling.tscn# Miniature split offspring
+│   │   └── boss.tscn           # Massive Gym Leader encounter
 │   └── creature/
 │       ├── creature.tscn
 │       └── creature.gd
@@ -94,12 +109,19 @@ res://
 │       └── xp_gem.gd
 ├── scenes/                     # Maps & orchestration scenes
 │   └── world/
-│       ├── world.tscn
+│       ├── world.tscn          # Game arena and main UI
 │       └── world.gd
-├── scripts/                    # Shared resources & utilities (upcoming)
-│   └── upgrade_resource.gd     # (Phase 1 target)
-├── ui/                         # Reusable UI components (upcoming)
-│   └── upgrade_card.tscn       # (Phase 1 target)
+├── scripts/                    # Shared resources & utility controllers
+│   ├── upgrade_resource.gd     # Level-up upgrade resource class
+│   ├── wave_manager.gd         # Wave orchestration & spawning
+│   └── camera_shake.gd         # Camera2D trauma shake system
+├── ui/                         # Reusable UI components
+│   ├── upgrade_card.tscn       # Individual upgrade options
+│   ├── upgrade_card.gd
+│   ├── upgrade_menu.tscn       # Selection wrapper
+│   ├── upgrade_menu.gd
+│   ├── damage_number.tscn      # Floater text scene
+│   └── damage_number.gd
 ├── project.godot
 ├── ARCHITECTURE.md
 ├── CHANGELOG.md
@@ -112,63 +134,43 @@ res://
 
 | Script | Location | Responsibility |
 |--------|----------|---------------|
-| [world.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.gd) | `scenes/world/` | Orchestrates initialization; spawns enemies on timer ring around player using `TAU` trigonometry |
-| [player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/player.gd) | `entities/player/` | Movement, HP management, XP economy, two-phase gem collection (Magnet → Mouth) |
-| [enemy.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/enemy/enemy.gd) | `entities/enemy/` | Chase AI via `move_and_slide()`, drops XP gem on `die()` using `call_deferred` |
-| [creature.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/creature/creature.gd) | `entities/creature/` | Follow/Attack FSM with lerp movement, `is_instance_valid()` safety checks |
-| [xp_gem.gd](file:///home/deck/Game%20Dev/vs3/vs-3/items/xp_gem/xp_gem.gd) | `items/xp_gem/` | Idle until magnetized, then accelerates via `move_toward()` |
+| [world.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.gd) | `scenes/world/` | Orchestrates the primary game loop, calculates elapsed survival time, manages the BossHealthBar, and initializes Player dependencies. |
+| [player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/player.gd) | `entities/player/` | Controls movement, HP management, level-up progression, upgrade implementation, and tracks the kill count. |
+| [enemy.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/enemy/enemy.gd) | `entities/enemy/` | Shared AI behavior script for all enemy archetypes. Handles hit flash effects, floating damage numbers, spawning child splitlings, and XP gem drops. |
+| [creature.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/creature/creature.gd) | `entities/creature/` | Companion entity following player and striking targets via a `FOLLOW` → `ATTACK` FSM. |
+| [xp_gem.gd](file:///home/deck/Game%20Dev/vs3/vs-3/items/xp_gem/xp_gem.gd) | `items/xp_gem/` | Magnetic loot object that accelerates toward player and pops visually on collection. |
+| [wave_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/wave_manager.gd) | `scripts/wave_manager.gd` | Escalation director that manages game phases, introduces variant enemies, and triggers the boss event. |
+| [camera_shake.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/camera_shake.gd) | `scripts/camera_shake.gd` | Trauma-based 2D camera shaking using a decaying noise offset. |
 
 ---
 
 ## 6. What's Built ✅
 
 - [x] Player 8-way movement with `CharacterBody2D` + `move_and_slide()`
-- [x] Camera2D attached to player
+- [x] Camera2D with trauma-based screen shake attached to player
 - [x] Elastic creature companion with Follow/Attack FSM
-- [x] Enemy spawner (Timer-based, radial off-screen spawn)
-- [x] Enemy chase AI with physics clumping
-- [x] Kamikaze damage system (enemy → player)
-- [x] Health bar UI (CanvasLayer + ProgressBar)
-- [x] XP gem drop on enemy death (preloaded scene, `call_deferred`)
-- [x] Two-phase gem collection (Magnet radius → Hurtbox consumption)
-- [x] XP bar UI with scaling level-up thresholds (1.5x multiplier)
-- [x] Level-up detection with `print()` confirmation
+- [x] WaveManager-based escalation (dynamic enemy pools & speed scaling)
+- [x] Five distinct enemy profiles (Grunt, Sprinter, Tank, Splitter, Splitling)
+- [x] Climax Boss Encounter (Gym Leader) scene & health bar tracker
+- [x] Health, XP, Kill Count, and Survival Timer UI elements
+- [x] Level-up system with tactical pause and choice-based upgrades
+- [x] Floating damage numbers & hit flash shader feedback on hit
+- [x] XP gem magnetized pickup & pop collection effects
 - [x] Feature-based directory structure
 - [x] Verbose educational comments on all scripts
 - [x] VS Code workspace integration (settings.json, tasks.json)
-- [x] Antigravity skill file for Godot conventions
 
 ---
 
 ## 7. Development Roadmap 🚀
 
-### Phase 1: The Upgrade System (NEXT)
-> **Goal:** When the player levels up, the game freezes, a styled menu appears with 3 random upgrade cards, picking one modifies stats.
-
-- [ ] Create `scripts/upgrade_resource.gd` — custom `Resource` class with `UpgradeType` enum, title, description, icon, and value
-- [ ] Create `ui/upgrade_card.tscn` — Button → VBoxContainer → TextureRect + Labels; emits `chosen` signal
-- [ ] Create `UpgradeMenu` (ColorRect) inside CanvasLayer with `process_mode = ALWAYS` so it works while paused
-- [ ] Wire `player.gd` → `level_up()` calls `upgrade_menu.open_menu()`
-- [ ] Wire `upgrade_menu.upgrade_selected` signal → `player.gd` applies stat changes via `match` on `UpgradeType`
-- [ ] Create at least 4 `.tres` upgrade resources: Speed Boost, Attack Speed, Heal, Max Health
-- [ ] Drag `.tres` files into the UpgradeMenu's `upgrade_pool` array in the Inspector
-
-### Phase 2: Tag-Team Roster
-- [ ] Refactor World to hold `Array[PackedScene]` of creatures (the Roster)
+### Phase 2: Tag-Team Roster (NEXT)
+- [ ] Refactor World/Player to hold `Array[PackedScene]` of creatures (the Roster)
 - [ ] Input listener (keys 1-6) to swap active creature
 - [ ] Entrance Effects on swap (temporary Area2D explosion/stun)
 - [ ] Badge system — survive milestones to unlock more active slots
 
-### Phase 3: Escalation Director
-- [ ] Replace `SpawnTimer` with `WaveManager` node
-- [ ] Wave data structures (Minute 1: basic, Minute 3: fast, Minute 5: tanky)
-- [ ] Elite/Boss spawns at minute 10 mark
-
-### Phase 4: Juice (High Polish)
-> **Rule:** Freeze all feature development during this phase.
-- [ ] Hit-flash shader (white flash 0.1s on enemy hit)
-- [ ] Trauma-based camera shake on damage
-- [ ] Damage number popups (Label + Tween: float up + fade out)
+### Phase 4: Remaining Juice & Polish
 - [ ] Squash-and-stretch on player movement changes
 - [ ] Particle emitters for gem pickup and level-up
 - [ ] Audio: xp-pickup pop, attack thud, level-up fanfare, ui-hover click
@@ -177,4 +179,4 @@ res://
 - [ ] Game Over screen on death
 - [ ] "Survived!" screen at 10-minute mark
 - [ ] Main menu with background gameplay loop
-- [ ] Survival timer display HUD
+

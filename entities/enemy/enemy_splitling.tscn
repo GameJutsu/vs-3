@@ -1,0 +1,25 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://bay7n4af1g781" path="res://entities/enemy/enemy.gd" id="1_script"]
+
+[sub_resource type="Gradient" id="Gradient_splitling"]
+colors = PackedColorArray(0.4, 1, 0.5, 1, 0.3, 0.8, 0.4, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_splitling"]
+gradient = SubResource("Gradient_splitling")
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_splitling"]
+radius = 25.0
+
+[node name="EnemySplitling" type="CharacterBody2D" groups=["enemy"]]
+script = ExtResource("1_script")
+speed = 150.0
+max_hp = 15
+xp_value = 5
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(0.6, 0.6)
+texture = SubResource("GradientTexture2D_splitling")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_splitling")

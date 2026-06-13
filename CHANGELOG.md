@@ -4,6 +4,30 @@ All notable changes to this project are documented in this file. The project adh
 
 ---
 
+## [v1.5.0] - 2026-06-13
+### Added
+- Created a time-based [wave_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/wave_manager.gd) supporting weighted random spawning, difficulty scaling, and boss encounters.
+- Added 4 enemy variants (Sprinter, Tank, Splitter, Splitling) and 1 Boss (Gym Leader) scene to [entities/enemy/](file:///home/deck/Game%20Dev/vs3/vs-3/entities/enemy/).
+- Added trauma-based screen shake in [camera_shake.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/camera_shake.gd).
+- Implemented sprite hit flashing using [hit_flash.gdshader](file:///home/deck/Game%20Dev/vs3/vs-3/assets/shaders/hit_flash.gdshader).
+- Implemented floating damage indicators using [damage_number.gd](file:///home/deck/Game%20Dev/vs3/vs-3/ui/damage_number.gd).
+- Integrated `TimerLabel` (survival timer) and `BossHealthBar` UI elements into [world.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.tscn) and [world.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.gd).
+
+### Refactored
+- Swapped `SpawnTimer` with the new `WaveManager` in [world.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.tscn).
+- Updated [enemy.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/enemy/enemy.gd) to support health variables, splitting mechanics on death, and hit flash/damage popups.
+- Upgraded XP gem collection in [xp_gem.gd](file:///home/deck/Game%20Dev/vs3/vs-3/items/xp_gem/xp_gem.gd) with a scale-up pop and fade-out animation.
+
+---
+
+## [v1.4.0] - 2026-06-13
+### Added
+- Created resource class [upgrade_resource.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/upgrade_resource.gd) with custom upgrade types.
+- Implemented choice-based level-up pause menu in [upgrade_menu.gd](file:///home/deck/Game%20Dev/vs3/vs-3/ui/upgrade_menu.gd) and [upgrade_card.gd](file:///home/deck/Game%20Dev/vs3/vs-3/ui/upgrade_card.gd).
+- Wired player level-ups to trigger the selection menu and apply selected buffs in [player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/player.gd).
+
+---
+
 ## [v1.3.0] - 2026-06-13
 ### Added
 - Created [xp_gem.gd](file:///home/deck/Game%20Dev/vs3/vs-3/xp_gem.gd) and [xp_gem.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/xp_gem.tscn) files.

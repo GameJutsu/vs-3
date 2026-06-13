@@ -1,15 +1,24 @@
 extends CharacterBody2D
 ## Enemy AI Controller Script
-## This script governs the basic behavior of an enemy: chasing a target (the player),
-## taking damage with visual feedback (hit flash + damage numbers), and dropping
-## an experience (XP) gem upon death.
+## Governs all enemy types: chasing the player, taking damage with visual feedback
+## (hit flash + damage numbers), dropping XP gems, and optional split-on-death behavior.
+## Different enemy variants (Grunt, Sprinter, Tank, Splitter) share this same script
+## but use different @export values configured in their respective .tscn files.
 
 # --- EXPORTED PARAMETERS ---
-@export var speed: float = 100.0           # The speed at which the enemy walks toward the target
-@export var max_hp: int = 50               # Total hit points before death
+@export var speed: float = 100.0              # Movement speed toward the player
+@export var max_hp: int = 50                  # Total hit points before death
+@export var xp_value: int = 10                # XP gem value dropped on death
+
+# --- SPLIT-ON-DEATH (Splitter enemy type) ---
+# When enabled, the enemy spawns smaller copies of itself upon death instead of
+# (or in addition to) dropping an XP gem. The Splitter archetype uses this.
+@export var splits_on_death: bool = false
+@export var split_scene: PackedScene = null   # The scene to spawn when splitting
+@export var split_count: int = 2              # How many copies to spawn
+@export var drops_gem: bool = true            # Set false for splitters (only splitlings drop gems)
 
 # --- PRELOADED RESOURCES ---
-# Preload scenes into RAM at compile time to prevent lag spikes during gameplay.
 const XP_GEM_SCENE: PackedScene = preload("res://items/xp_gem/xp_gem.tscn")
 const DAMAGE_NUMBER_SCENE: PackedScene = preload("res://ui/damage_number.tscn")
 const HIT_FLASH_SHADER: Shader = preload("res://assets/shaders/hit_flash.gdshader")
@@ -26,7 +35,7 @@ func _ready() -> void:
 	current_hp = max_hp
 	
 	# Apply the hit flash shader to the sprite's material.
-	# Each enemy instance gets its own ShaderMaterial so flashes don't bleed between enemies.
+	# Each instance gets its own ShaderMaterial so flashes don't bleed between enemies.
 	var mat: ShaderMaterial = ShaderMaterial.new()
 	mat.shader = HIT_FLASH_SHADER
 	sprite.material = mat
@@ -39,49 +48,50 @@ func _physics_process(_delta: float) -> void:
 		move_and_slide()
 
 # --- DAMAGE SYSTEM ---
-# Called by the creature or any other damage source.
-# Handles HP reduction, hit flash, damage number spawning, and death.
 func take_damage(amount: int) -> void:
 	current_hp -= amount
-	
-	# 1. Spawn a floating damage number at this enemy's position
 	_spawn_damage_number(amount)
-	
-	# 2. Trigger the white flash on the sprite
 	_flash_white()
 	
-	# 3. Check for death
 	if current_hp <= 0:
 		die()
 
 # --- HIT FLASH ---
-# Instantly sets the shader's flash_intensity to 1.0 (pure white),
-# then tweens it back to 0.0 over 0.1 seconds for a crisp, punchy flash.
 func _flash_white() -> void:
 	if sprite.material is ShaderMaterial:
 		var mat: ShaderMaterial = sprite.material as ShaderMaterial
 		mat.set_shader_parameter("flash_intensity", 1.0)
-		
 		var tween: Tween = create_tween()
 		tween.tween_property(mat, "shader_parameter/flash_intensity", 0.0, 0.1)
 
 # --- DAMAGE NUMBER ---
-# Instantiates a floating label showing the damage dealt, positioned at the enemy's location.
 func _spawn_damage_number(amount: int) -> void:
 	var dmg_num: Label = DAMAGE_NUMBER_SCENE.instantiate()
 	dmg_num.text = str(amount)
-	dmg_num.global_position = global_position + Vector2(0, -30)  # Slightly above the enemy
-	# Add to the World (parent) so the number persists after the enemy dies
+	dmg_num.global_position = global_position + Vector2(0, -30)
 	get_parent().call_deferred("add_child", dmg_num)
 
 # --- DEATH & CLEANUP ---
 func die() -> void:
-	# Notify the player to increment the kill counter
+	# 1. Notify the player's kill counter
 	if target_node != null and target_node.has_method("register_kill"):
 		target_node.register_kill()
 	
-	var gem: Area2D = XP_GEM_SCENE.instantiate()
-	gem.global_position = global_position
-	get_parent().call_deferred("add_child", gem)
+	# 2. Split into smaller enemies if configured (Splitter archetype)
+	if splits_on_death and split_scene != null:
+		for i: int in range(split_count):
+			var child_enemy: CharacterBody2D = split_scene.instantiate()
+			# Offset each splitling slightly so they don't stack perfectly
+			var offset: Vector2 = Vector2(randf_range(-30, 30), randf_range(-30, 30))
+			child_enemy.global_position = global_position + offset
+			child_enemy.target_node = target_node
+			get_parent().call_deferred("add_child", child_enemy)
+	
+	# 3. Drop an XP gem (unless this is a splitter that only spawns children)
+	if drops_gem:
+		var gem: Area2D = XP_GEM_SCENE.instantiate()
+		gem.global_position = global_position
+		gem.xp_value = xp_value
+		get_parent().call_deferred("add_child", gem)
+	
 	queue_free()
-
