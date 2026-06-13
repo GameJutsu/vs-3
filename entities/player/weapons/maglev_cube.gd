@@ -147,9 +147,8 @@ func _detonate() -> void:
 	state = State.RETURNING
 	SoundManager.play_sound("maglev_explode")
 	
-	# Trigger camera shake
-	if player.camera != null and player.camera.has_method("add_trauma"):
-		player.camera.add_trauma(0.55)
+	# Trigger camera shake via EventBus
+	EventBus.camera_shake_requested.emit(0.55)
 		
 	# Explode in area
 	var radius = base_explosion_radius * GlobalStats.global_aoe_radius
