@@ -26,6 +26,7 @@ enum UpgradeType {
 	GLOBAL_AOE_RADIUS,       # Multiplies global impact/explosion radius
 	GLOBAL_VELOCITY,         # Multiplies global movement/orbit speed
 	COMPANION_BUFF,          # Upgrades a specific companion's performance
+	EVOLVE_CREATURE,         # Evolves a companion to their next form
 }
 @export var type: UpgradeType
 

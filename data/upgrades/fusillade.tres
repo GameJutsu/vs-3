@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UpgradeResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_resource.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+title = "Fusillade"
+description = "Fires an additional fan of 2 projectiles, but reduces individual projectile damage by 10%."
+type = 5
+value = 2.0
+creature_id = ""

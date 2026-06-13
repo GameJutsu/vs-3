@@ -51,6 +51,11 @@ func _fire_shot() -> void:
 		card.is_red = is_red_shot
 		card.direction = dir
 		
+		# If player has fusillade, reduce card damage by 10%
+		var p = get_parent()
+		if p != null and "owned_upgrades" in p and p.owned_upgrades.has("fusillade"):
+			card.damage = card.damage * 0.9
+		
 		if not is_red_shot:
 			# Black cards start in orbiting mode around player
 			card.orbiting = true

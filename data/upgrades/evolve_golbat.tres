@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UpgradeResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_resource.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+title = "Evolve Golbat"
+description = "Upgrades Zubat to Golbat. Enables +2 extra draining tethers that chain to adjacent targets."
+type = 10
+value = 0.0
+creature_id = "zubat"

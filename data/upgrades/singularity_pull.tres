@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UpgradeResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_resource.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+title = "Gravity Well"
+description = "Weapon explosions create a gravitational pull, dragging nearby enemies toward the center."
+type = 7
+value = 0.0
+creature_id = ""

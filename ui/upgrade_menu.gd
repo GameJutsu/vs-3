@@ -29,6 +29,16 @@ var upgrade_pool: Array[UpgradeResource] = [
 	preload("res://data/upgrades/buff_staryu.tres"),
 	preload("res://data/upgrades/buff_geodude.tres"),
 	preload("res://data/upgrades/buff_pikachu.tres"),
+	preload("res://data/upgrades/unlock_rattata.tres"),
+	preload("res://data/upgrades/evolve_raticate.tres"),
+	preload("res://data/upgrades/evolve_golbat.tres"),
+	preload("res://data/upgrades/evolve_starmie.tres"),
+	preload("res://data/upgrades/evolve_graveler.tres"),
+	preload("res://data/upgrades/evolve_raichu.tres"),
+	preload("res://data/upgrades/blink_dash.tres"),
+	preload("res://data/upgrades/phoenix_rebirth.tres"),
+	preload("res://data/upgrades/fusillade.tres"),
+	preload("res://data/upgrades/singularity_pull.tres"),
 ]
 
 # --- SIGNALS ---
@@ -111,12 +121,20 @@ func _build_filtered_pool(level: int, player_roster: Array[String], owned: Array
 			"raichu": base_roster.append("pikachu")
 			_: base_roster.append(creature)
 			
-	# Tech Tree Columns progression mapping (Player/Global upgrades only)
+	# Tech Tree Columns progression mapping (All upgrades in a tree)
 	var tree_columns = [
-		["speed_boost", "upgrade_global_velocity"],
-		["max_health", "heal"],
-		["upgrade_global_fire_rate", "upgrade_global_projectiles"],
-		["upgrade_global_aoe_radius", "attack_speed"]
+		# Global Trees
+		["speed_boost", "upgrade_global_velocity", "blink_dash"],
+		["max_health", "heal", "phoenix_rebirth"],
+		["upgrade_global_fire_rate", "upgrade_global_projectiles", "fusillade"],
+		["upgrade_global_aoe_radius", "attack_speed", "singularity_pull"],
+		
+		# Pokemon Trees (Summon -> Buff -> Evolve)
+		["unlock_rattata", "buff_rattata", "evolve_raticate"],
+		["unlock_zubat", "buff_zubat", "evolve_golbat"],
+		["unlock_staryu", "buff_staryu", "evolve_starmie"],
+		["unlock_geodude", "buff_geodude", "evolve_graveler"],
+		["unlock_pikachu", "buff_pikachu", "evolve_raichu"]
 	]
 	
 	for upgrade in upgrade_pool:
@@ -126,39 +144,24 @@ func _build_filtered_pool(level: int, player_roster: Array[String], owned: Array
 		if owned.has(id):
 			continue
 			
-		# 2. Check if the upgrade belongs to a tech tree column
-		var in_tree = false
-		var tree_unlocked = false
+		# 2. Check prerequisites via tree columns
+		var parent_owned = false
+		var found_in_any_tree = false
 		
 		for col in tree_columns:
 			var idx = col.find(id)
 			if idx != -1:
-				in_tree = true
+				found_in_any_tree = true
 				if idx == 0:
-					tree_unlocked = true # Tier 1 always available
+					parent_owned = true # Root node, always unlocked
 				else:
 					var parent_id = col[idx - 1]
 					if owned.has(parent_id):
-						tree_unlocked = true
+						parent_owned = true
 				break
 				
-		if in_tree:
-			if not tree_unlocked:
-				continue # Parent prerequisite is not met
-				
-			# Special check: If this is a companion buff node (Tier 3), player must own the companion
-			# All checks passed, add to pool
+		if found_in_any_tree and parent_owned:
 			filtered.append(upgrade)
-		else:
-			# Non-tree upgrades (Companion Unlocks and Companion Buffs)
-			if upgrade.type == UpgradeResource.UpgradeType.UNLOCK_CREATURE:
-				# Unlockable if they don't already own the companion (no level gate)
-				if not base_roster.has(upgrade.creature_id):
-					filtered.append(upgrade)
-			elif upgrade.type == UpgradeResource.UpgradeType.COMPANION_BUFF:
-				# Available if companion owned and buff is not already owned
-				if base_roster.has(upgrade.creature_id):
-					filtered.append(upgrade)
 					
 	return filtered
 

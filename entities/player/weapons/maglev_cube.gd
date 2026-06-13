@@ -153,6 +153,8 @@ func _detonate() -> void:
 	# Explode in area
 	var radius = base_explosion_radius * GlobalStats.global_aoe_radius
 	var damage = int(base_damage)
+	if player != null and "owned_upgrades" in player and player.owned_upgrades.has("fusillade"):
+		damage = int(damage * 0.9)
 	
 	var enemies = get_tree().get_nodes_in_group("enemy")
 	for enemy in enemies:
@@ -160,13 +162,16 @@ func _detonate() -> void:
 			var dist = global_position.distance_to(enemy.global_position)
 			if dist <= radius:
 				enemy.take_damage(damage)
-				# Pushback force from center of explosion
+				# Pushback or pull force from center of explosion
 				var push_dir = (enemy.global_position - global_position).normalized()
 				if push_dir == Vector2.ZERO:
 					push_dir = Vector2.RIGHT
-				# Apply a strong physical knockback
+				# Apply a strong physical knockback (pull if singularity_pull is owned)
 				if enemy.has_method("apply_knockback"):
-					enemy.apply_knockback(push_dir * 550.0)
+					if player != null and "owned_upgrades" in player and player.owned_upgrades.has("singularity_pull"):
+						enemy.apply_knockback(-push_dir * 600.0)
+					else:
+						enemy.apply_knockback(push_dir * 550.0)
 					
 	# Visual blast feedback
 	_spawn_blast_particles(radius)
