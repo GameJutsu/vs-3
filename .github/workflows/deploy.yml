@@ -37,10 +37,15 @@ jobs:
           # Clean up zip files to save disk space
           rm godot.zip templates.tpz
 
+      - name: Debug Template Directory
+        run: |
+          echo "Listing templates directory..."
+          ls -la ~/.local/share/godot/export_templates/4.6.3.stable/
+
       - name: Export Project to Web
         run: |
           mkdir -p build/Web
-          ./Godot_v4.6.3-stable_linux.x86_64 --headless --path . --export-release "Web" build/Web/index.html
+          ./Godot_v4.6.3-stable_linux.x86_64 --verbose --headless --path . --export-release "Web" build/Web/index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
