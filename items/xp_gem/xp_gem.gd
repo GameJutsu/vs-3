@@ -12,32 +12,39 @@ extends Area2D
 # --- INTERNAL KINEMATICS ---
 var target: Node2D = null                  # The target node we are drawn to (typically the player character)
 var current_speed: float = 0.0             # Starts at 0.0; we accelerate this over time
+var _collected: bool = false               # Guard flag to prevent double-collection
 
 # --- FRAME-BY-FRAME MOVEMENT ---
-# _process(delta) is used here because the gem does not perform physics collisions
-# (like pushing walls or other bodies). It is a simple visual movement calculation.
 func _process(delta: float) -> void:
-	# 1. Idle State: If no target is set, the gem sits still waiting for the player.
-	if target == null:
+	if target == null or _collected:
 		return
 		
-	# 2. Collecting State: Accelerate towards the target.
-	# We increment the speed by 400.0 pixels per second squared.
-	# By multiplying by delta, we ensure the acceleration is smooth and independent of framerate.
-	# Accelerating speed over time creates a satisfying "vacuum snap" effect where the gem 
-	# speeds up as it gets closer to the player.
+	# Accelerate towards the target for a satisfying "vacuum snap" effect
 	current_speed += 400.0 * delta 
-	
-	# 3. Position Calculation:
-	# global_position.move_toward() calculates a new position along a straight line 
-	# to target.global_position. 
-	# Unlike lerp (which slows down near the end), move_toward moves at a constant/accelerating 
-	# speed and guarantees it will land exactly on the target without overshooting it.
 	global_position = global_position.move_toward(target.global_position, current_speed * delta)
 
 # --- PUBLIC INTERFACE ---
-# This method is called by the Player's magnet script when the gem overlaps with the player's
-# magnetic radius. It assigns the player as the target, initiating the attraction behavior.
+# Called by the Player's magnet script when the gem enters the magnetic radius.
 func magnetize_to(new_target: Node2D) -> void:
 	target = new_target
 
+# --- COLLECTION WITH VISUAL POP ---
+# Called by the Player when the gem reaches the hurtbox.
+# Instead of instantly vanishing, the gem plays a satisfying scale-up pop and fade-out.
+func collect() -> void:
+	if _collected:
+		return
+	_collected = true
+	
+	# Disable the collision shape so we don't get collected twice
+	$CollisionShape2D.set_deferred("disabled", true)
+	
+	# Stop chasing the player
+	set_process(false)
+	
+	# Play a quick pop: scale up 1.5x and fade out over 0.15 seconds
+	var tween: Tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(self, "scale", scale * 1.5, 0.15)
+	tween.tween_property(self, "modulate:a", 0.0, 0.15)
+	tween.chain().tween_callback(queue_free)

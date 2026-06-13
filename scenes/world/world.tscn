@@ -5,6 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://hw1thontpi45" path="res://entities/enemy/enemy.tscn" id="2_aqk2v"]
 [ext_resource type="PackedScene" uid="uid://byhfa7tgt4p2j" path="res://entities/creature/creature.tscn" id="3_aqk2v"]
 [ext_resource type="PackedScene" path="res://ui/upgrade_menu.tscn" id="5_upgrade"]
+[ext_resource type="Script" path="res://scripts/camera_shake.gd" id="6_shake"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_fj7yv"]
 
@@ -39,6 +40,7 @@ texture = SubResource("PlaceholderTexture2D_fj7yv")
 shape = SubResource("RectangleShape2D_tlwt5")
 
 [node name="Camera2D" type="Camera2D" parent="Player" unique_id=649479389]
+script = ExtResource("6_shake")
 
 [node name="Hurtbox" type="Area2D" parent="Player" unique_id=1920327147]
 
@@ -73,6 +75,21 @@ offset_bottom = 67.0
 grow_horizontal = 0
 theme_override_styles/fill = SubResource("StyleBoxFlat_036b0")
 value = 37.07
+
+[node name="KillLabel" type="Label" parent="CanvasLayer"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 8.0
+offset_bottom = 38.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1.0, 0.85, 0.85, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 22
+text = "0"
+horizontal_alignment = 2
 
 [node name="UpgradeMenu" parent="CanvasLayer" instance=ExtResource("5_upgrade")]
 

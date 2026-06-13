@@ -23,9 +23,15 @@ var xp_to_next_level: int = 100            # Total XP required to reach the next
 @onready var xp_bar: ProgressBar = $"../CanvasLayer/XPBar"
 
 # --- UPGRADE SYSTEM ---
-# Reference to the UpgradeMenu node inside the CanvasLayer.
-# The menu handles pausing/unpausing; we just need to call open_menu() and handle the result.
 @onready var upgrade_menu = $"../CanvasLayer/UpgradeMenu"
+
+# --- CAMERA SHAKE ---
+# Reference to the Camera2D which has the camera_shake.gd script attached.
+@onready var camera: Camera2D = $Camera2D
+
+# --- KILL COUNTER ---
+var kill_count: int = 0
+@onready var kill_label: Label = $"../CanvasLayer/KillLabel"
 
 # --- INITIALIZATION ---
 # _ready() is called once when the node and its children enter the scene tree.
@@ -68,11 +74,13 @@ func _on_hurtbox_body_entered(body: Node2D) -> void:
 # Function to handle player damage and update UI
 func take_damage(amount: int) -> void:
 	current_health -= amount
-	health_bar.value = current_health       # Update UI slider
+	health_bar.value = current_health
 	
-	# Check for game over condition
+	# Trigger a heavy camera shake — the player just got hit!
+	if camera.has_method("add_trauma"):
+		camera.add_trauma(0.6)
+	
 	if current_health <= 0:
-		# Reload the current scene to restart the game
 		get_tree().reload_current_scene()
 
 # =========================================================
@@ -92,10 +100,9 @@ func _on_magnet_radius_area_entered(area: Area2D) -> void:
 # Triggered when a flying gem successfully reaches the player's core center hitbox.
 func _on_hurtbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group("gem"):
-		# 1. Read the gem's custom XP value
 		gain_xp(area.xp_value)
-		# 2. Safely queue the gem for deletion at the end of the frame
-		area.queue_free()
+		# Trigger the gem's pop-and-fade collection animation instead of instant deletion
+		area.collect()
 
 # Handles XP gains and progression math
 func gain_xp(amount: int) -> void:
@@ -159,3 +166,16 @@ func _on_upgrade_menu_upgrade_selected(data: UpgradeResource) -> void:
 			health_bar.max_value = max_health
 			health_bar.value = current_health
 			print("Max health increased to: ", max_health)
+
+# =========================================================
+# KILL TRACKING
+# =========================================================
+
+# Called externally (e.g. by World or signals) when an enemy is confirmed killed.
+func register_kill() -> void:
+	kill_count += 1
+	kill_label.text = str(kill_count)
+	
+	# Subtle camera shake on each kill for micro-feedback
+	if camera.has_method("add_trauma"):
+		camera.add_trauma(0.1)
