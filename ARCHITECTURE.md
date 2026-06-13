@@ -148,7 +148,11 @@ res://
 
 - [x] Player 8-way movement with `CharacterBody2D` + `move_and_slide()`
 - [x] Camera2D with trauma-based screen shake attached to player
-- [x] Elastic creature companion with Follow/Attack FSM
+- [x] Tag-Team Roster system with single-action cycling (Right-Click/Space/C Key)
+- [x] Four distinct companion types (Brawler, Sniper, Orbiter, Healer)
+- [x] Swap Entrance Effects (Shockwave stun, Bullet nova, Shield speed boost, HP heal burst)
+- [x] Companion upgrade card drops (Unlock Sniper, Unlock Orbiter, Unlock Healer)
+- [x] Companion roster HUD panel display showing current active status
 - [x] WaveManager-based escalation (dynamic enemy pools & speed scaling)
 - [x] Five distinct enemy profiles (Grunt, Sprinter, Tank, Splitter, Splitling)
 - [x] Climax Boss Encounter (Gym Leader) scene & health bar tracker
@@ -164,13 +168,7 @@ res://
 
 ## 7. Development Roadmap 🚀
 
-### Phase 2: Tag-Team Roster (NEXT)
-- [ ] Refactor World/Player to hold `Array[PackedScene]` of creatures (the Roster)
-- [ ] Input listener (keys 1-6) to swap active creature
-- [ ] Entrance Effects on swap (temporary Area2D explosion/stun)
-- [ ] Badge system — survive milestones to unlock more active slots
-
-### Phase 4: Remaining Juice & Polish
+### Phase 4: Remaining Juice & Polish (NEXT)
 - [ ] Squash-and-stretch on player movement changes
 - [ ] Particle emitters for gem pickup and level-up
 - [ ] Audio: xp-pickup pop, attack thud, level-up fanfare, ui-hover click

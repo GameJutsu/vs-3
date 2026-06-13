@@ -33,6 +33,12 @@ var xp_to_next_level: int = 100            # Total XP required to reach the next
 var kill_count: int = 0
 @onready var kill_label: Label = $"../CanvasLayer/KillLabel"
 
+# --- COMPANION ROSTER ---
+@onready var creature: Area2D = $"../Creature"
+@onready var companion_label: Label = $"../CanvasLayer/CompanionLabel"
+var roster: Array[String] = ["brawler"]
+var active_creature_index: int = 0
+
 # --- INITIALIZATION ---
 # _ready() is called once when the node and its children enter the scene tree.
 func _ready() -> void:
@@ -42,6 +48,7 @@ func _ready() -> void:
 	
 	xp_bar.max_value = xp_to_next_level
 	xp_bar.value = current_xp
+	update_companion_hud()
 
 # --- PHYSICS UPDATE LOOP ---
 # _physics_process(delta) is called at a fixed frame rate (default 60Hz) for physics calculations.
@@ -59,6 +66,31 @@ func _physics_process(_delta: float) -> void:
 	# automatically resolving collisions (sliding along walls rather than stopping), 
 	# and applying delta internally.
 	move_and_slide()
+
+# --- INPUT HANDLING ---
+func _unhandled_input(event: InputEvent) -> void:
+	# Ignore input if game is paused
+	if get_tree().paused:
+		return
+		
+	# Cycle creature on Right Click, Spacebar, or C Key
+	var is_right_click: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed
+	var is_cycle_key: bool = event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_C) and event.pressed
+	
+	if is_right_click or is_cycle_key:
+		cycle_creature()
+
+func cycle_creature() -> void:
+	if roster.size() <= 1:
+		return
+		
+	active_creature_index = (active_creature_index + 1) % roster.size()
+	var next_creature_type: String = roster[active_creature_index]
+	
+	if creature != null and is_instance_valid(creature):
+		creature.set_archetype(next_creature_type)
+		print("[Player] Swapped active companion to: ", next_creature_type)
+	update_companion_hud()
 
 # =========================================================
 # DAMAGE & DEATH LOGIC
@@ -166,6 +198,37 @@ func _on_upgrade_menu_upgrade_selected(data: UpgradeResource) -> void:
 			health_bar.max_value = max_health
 			health_bar.value = current_health
 			print("Max health increased to: ", max_health)
+			
+		UpgradeResource.UpgradeType.UNLOCK_CREATURE:
+			unlock_creature(data.creature_id)
+
+func unlock_creature(new_id: String) -> void:
+	if not roster.has(new_id):
+		roster.append(new_id)
+		print("[Player] UNLOCKED NEW COMPANION: ", new_id)
+		
+		# Auto-switch to the newly unlocked creature
+		active_creature_index = roster.size() - 1
+		if creature != null and is_instance_valid(creature):
+			creature.set_archetype(new_id)
+			
+		# Spawn floating pop message on player's position
+		var label: Label = preload("res://ui/damage_number.tscn").instantiate()
+		label.text = "UNLOCKED: " + new_id.to_upper() + "!"
+		label.global_position = global_position + Vector2(-60, -50)
+		get_parent().call_deferred("add_child", label)
+	update_companion_hud()
+
+func update_companion_hud() -> void:
+	if companion_label != null:
+		var roster_strings: Array = []
+		for i in range(roster.size()):
+			var c = roster[i].to_upper()
+			if i == active_creature_index:
+				roster_strings.append("[" + c + "]")
+			else:
+				roster_strings.append(c)
+		companion_label.text = "🐾 ROSTER: " + ", ".join(roster_strings)
 
 # =========================================================
 # KILL TRACKING

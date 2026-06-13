@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The project adh
 
 ---
 
+## [v1.6.0] - 2026-06-13
+### Added
+- Expanded companion system in [creature.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/creature/creature.gd) with 4 archetypes: Brawler (melee), Sniper (ranged), Orbiter (orbiting blades), and Healer (passive healing pulses).
+- Implemented single-input tag-team cycling on [player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/player.gd) mapping to Right Mouse Click, Spacebar, or the C Key.
+- Added 4 Swap Entrance Effects ("tactical nukes") when cycling companions: Brawler AoE stun blast, Sniper bullet nova, Orbiter rotation speed boost, and Healer burst heal.
+- Added 3 new creature unlock `.tres` resource files to [data/upgrades/](file:///home/deck/Game%20Dev/vs3/vs-3/data/upgrades/) and integrated them into the random level-up card pool.
+- Added a floating `CompanionLabel` HUD text readout in [world.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.tscn) showing the owned roster and active companion.
+- Created Sniper projectile logic in [projectile.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/creature/projectile.gd) and [projectile.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/entities/creature/projectile.tscn).
+
+---
+
 ## [v1.5.0] - 2026-06-13
 ### Added
 - Created a time-based [wave_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/wave_manager.gd) supporting weighted random spawning, difficulty scaling, and boss encounters.
