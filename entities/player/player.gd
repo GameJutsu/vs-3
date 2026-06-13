@@ -91,33 +91,74 @@ func _physics_process(delta: float) -> void:
 	if swap_cooldown_timer > 0.0:
 		swap_cooldown_timer = maxf(swap_cooldown_timer - delta, 0.0)
 		
-	# --- MOUSE DEADZONE MOVEMENT ---
-	var mouse_pos: Vector2 = get_global_mouse_position()
-	var offset_to_mouse: Vector2 = mouse_pos - global_position
-	var dist_to_mouse: float = offset_to_mouse.length()
-	var direction: Vector2 = offset_to_mouse.normalized()
+	# --- JOYSTICK CONTROLLER INPUT ---
+	var left_stick: Vector2 = Vector2(
+		Input.get_joy_axis(0, JOY_AXIS_LEFT_X),
+		Input.get_joy_axis(0, JOY_AXIS_LEFT_Y)
+	)
+	var right_stick: Vector2 = Vector2(
+		Input.get_joy_axis(0, JOY_AXIS_RIGHT_X),
+		Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y)
+	)
 	
-	var is_moving: bool = dist_to_mouse > deadzone_radius
-	
-	if is_moving:
-		velocity = direction * speed
-		# Face mouse cursor
-		sprite.rotation = direction.angle()
+	var stick_deadzone: float = 0.18
+	if left_stick.length() < stick_deadzone:
+		left_stick = Vector2.ZERO
+	if right_stick.length() < stick_deadzone:
+		right_stick = Vector2.ZERO
 		
-		# Stretch along direction of motion
-		if not _was_moving:
-			sprite.scale = _base_sprite_scale * Vector2(1.15, 0.85)
+	var using_controller: bool = left_stick != Vector2.ZERO or right_stick != Vector2.ZERO
+	
+	if using_controller:
+		velocity = left_stick * speed
+		
+		# Rotate based on Right Stick, or fallback to Left Stick movement direction
+		var look_dir: Vector2 = Vector2.ZERO
+		if right_stick != Vector2.ZERO:
+			look_dir = right_stick
+		elif left_stick != Vector2.ZERO:
+			look_dir = left_stick
+			
+		if look_dir != Vector2.ZERO:
+			sprite.rotation = look_dir.angle()
+			
+		# Squash and stretch squash indicators
+		var is_moving: bool = left_stick != Vector2.ZERO
+		if is_moving:
+			if not _was_moving:
+				sprite.scale = _base_sprite_scale * Vector2(1.15, 0.85)
+		else:
+			if _was_moving:
+				sprite.scale = _base_sprite_scale * Vector2(0.82, 1.18)
+		_was_moving = is_moving
 	else:
-		velocity = Vector2.ZERO
-		# Face mouse cursor even when stopped
-		if dist_to_mouse > 5.0:
+		# --- MOUSE DEADZONE MOVEMENT (FALLBACK) ---
+		var mouse_pos: Vector2 = get_global_mouse_position()
+		var offset_to_mouse: Vector2 = mouse_pos - global_position
+		var dist_to_mouse: float = offset_to_mouse.length()
+		var direction: Vector2 = offset_to_mouse.normalized()
+		
+		var is_moving: bool = dist_to_mouse > deadzone_radius
+		
+		if is_moving:
+			velocity = direction * speed
+			# Face mouse cursor
 			sprite.rotation = direction.angle()
 			
-		# Squash when coming to a halt
-		if _was_moving:
-			sprite.scale = _base_sprite_scale * Vector2(0.82, 1.18)
-			
-	_was_moving = is_moving
+			# Stretch along direction of motion
+			if not _was_moving:
+				sprite.scale = _base_sprite_scale * Vector2(1.15, 0.85)
+		else:
+			velocity = Vector2.ZERO
+			# Face mouse cursor even when stopped
+			if dist_to_mouse > 5.0:
+				sprite.rotation = direction.angle()
+				
+			# Squash when coming to a halt
+			if _was_moving:
+				sprite.scale = _base_sprite_scale * Vector2(0.82, 1.18)
+				
+		_was_moving = is_moving
 	
 	# Lerp scale back to normal base scale
 	sprite.scale = sprite.scale.lerp(_base_sprite_scale, 10.0 * delta)
@@ -125,17 +166,17 @@ func _physics_process(delta: float) -> void:
 	move_and_slide()
 	_update_stats_hud()
 
-# --- INPUT HANDLING ---
 func _unhandled_input(event: InputEvent) -> void:
 	# Ignore input if game is paused
 	if get_tree().paused:
 		return
 		
-	# Cycle companion on RMB Click, Spacebar, or C Key
+	# Cycle companion on RMB Click, Spacebar, C Key, or Controller shoulder/face button
 	var is_right_click: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed
 	var is_cycle_key: bool = event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_C) and event.pressed
+	var is_joy_swap: bool = event is InputEventJoypadButton and (event.button_index == JOY_BUTTON_LEFT_SHOULDER or event.button_index == JOY_BUTTON_RIGHT_SHOULDER or event.button_index == JOY_BUTTON_X) and event.pressed
 	
-	if is_right_click or is_cycle_key:
+	if is_right_click or is_cycle_key or is_joy_swap:
 		cycle_creature()
 
 	# Debug: Toggle auto-fire
@@ -271,9 +312,9 @@ func level_up() -> void:
 	
 	# Trigger the Tactical Pause — freeze the world and show upgrade cards
 	if debug_mode:
-		# Auto-select a random upgrade instead of showing the menu
+		# Auto-select a random upgrade from the FILTERED tech tree pool
 		if hud != null and hud.upgrade_menu != null:
-			var pool = hud.upgrade_menu.upgrade_pool.duplicate()
+			var pool = hud.upgrade_menu._build_filtered_pool(current_level, roster, owned_upgrades)
 			pool.shuffle()
 			if pool.size() > 0:
 				_on_upgrade_menu_upgrade_selected(pool[0])
@@ -522,4 +563,4 @@ func _update_stats_hud() -> void:
 # =========================================================
 
 func is_firing() -> bool:
-	return auto_fire or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+	return auto_fire or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or Input.is_joy_button_pressed(0, JOY_BUTTON_A) or Input.get_joy_axis(0, JOY_AXIS_TRIGGER_RIGHT) > 0.4

@@ -69,8 +69,14 @@ func open_menu(level: int, player_roster: Array[String] = []) -> void:
 	# 4. Wait one frame for queue_free to process before adding new cards
 	await get_tree().process_frame
 	
-	# 5. Build a filtered pool using level-based gating rules
-	var available: Array[UpgradeResource] = _build_filtered_pool(level, player_roster)
+	# Retrieve player owned upgrades
+	var player = get_tree().current_scene.get_node_or_null("Player")
+	var owned: Array[String] = []
+	if player != null and "owned_upgrades" in player:
+		owned = player.owned_upgrades
+		
+	# 5. Build a filtered pool using level-based gating and tech tree progression rules
+	var available: Array[UpgradeResource] = _build_filtered_pool(level, player_roster, owned)
 	available.shuffle()
 	
 	var count: int = mini(3, available.size())
@@ -83,16 +89,15 @@ func open_menu(level: int, player_roster: Array[String] = []) -> void:
 	
 	# 6. Show the menu overlay
 	show()
+	
+	# 7. Grab focus on the first card for keyboard/controller UI navigation
+	if card_container.get_child_count() > 0:
+		card_container.get_child(0).grab_focus()
 
-# --- UPGRADE GATING ---
-# Filters the upgrade pool based on player level and roster composition.
-# Gating rules:
-#   Levels 1-3: Base stats only (Speed, Heal, Max HP, Attack Speed)
-#   Levels 4-6: Above + Global modifiers (Projectiles, Fire Rate, AoE, Velocity)
-#   Levels 7+:  Above + Companion unlocks
-#   Any level:  Companion buffs only if that companion is in the roster
-#   Companion unlocks are removed if already owned
-func _build_filtered_pool(level: int, player_roster: Array[String]) -> Array[UpgradeResource]:
+# --- UPGRADE GATING & TECH TREE ---
+# Filters the upgrade pool strictly based on prerequisites and tech tree rules.
+# Once an upgrade is owned, it is removed from the selection pool.
+func _build_filtered_pool(level: int, player_roster: Array[String], owned: Array[String]) -> Array[UpgradeResource]:
 	var filtered: Array[UpgradeResource] = []
 	
 	# Map evolved forms back to base forms for roster checking
@@ -105,34 +110,70 @@ func _build_filtered_pool(level: int, player_roster: Array[String]) -> Array[Upg
 			"graveler": base_roster.append("geodude")
 			"raichu": base_roster.append("pikachu")
 			_: base_roster.append(creature)
+			
+	# Tech Tree Columns progression mapping
+	var tree_columns = [
+		["speed_boost", "upgrade_global_velocity", "buff_zubat"],
+		["max_health", "heal", "buff_geodude"],
+		["upgrade_global_fire_rate", "upgrade_global_projectiles", "buff_pikachu"],
+		["upgrade_global_aoe_radius", "attack_speed", "buff_staryu"]
+	]
 	
 	for upgrade in upgrade_pool:
-		match upgrade.type:
-			# BASE STATS — always available
-			UpgradeResource.UpgradeType.PLAYER_SPEED, \
-			UpgradeResource.UpgradeType.CREATURE_ATTACK_SPEED, \
-			UpgradeResource.UpgradeType.HEAL_PLAYER, \
-			UpgradeResource.UpgradeType.MAX_HEALTH:
-				filtered.append(upgrade)
+		var id = upgrade.resource_path.get_file().get_basename()
+		
+		# 1. If the upgrade is already owned, never offer it again (single purchase)
+		if owned.has(id):
+			continue
 			
-			# GLOBAL MODIFIERS — available from level 4+
-			UpgradeResource.UpgradeType.GLOBAL_PROJECTILES, \
-			UpgradeResource.UpgradeType.GLOBAL_FIRE_RATE, \
-			UpgradeResource.UpgradeType.GLOBAL_AOE_RADIUS, \
-			UpgradeResource.UpgradeType.GLOBAL_VELOCITY:
-				if level >= 4:
-					filtered.append(upgrade)
-			
-			# COMPANION UNLOCKS — available from level 7+, only if not already owned
-			UpgradeResource.UpgradeType.UNLOCK_CREATURE:
+		# 2. Check if the upgrade belongs to a tech tree column
+		var in_tree = false
+		var tree_unlocked = false
+		
+		for col in tree_columns:
+			var idx = col.find(id)
+			if idx != -1:
+				in_tree = true
+				if idx == 0:
+					tree_unlocked = true # Tier 1 always available
+				else:
+					var parent_id = col[idx - 1]
+					if owned.has(parent_id):
+						tree_unlocked = true
+				break
+				
+		if in_tree:
+			if not tree_unlocked:
+				continue # Parent prerequisite is not met
+				
+			# Special check: If this is a companion buff node (Tier 3), player must own the companion
+			if id == "buff_zubat" and not base_roster.has("zubat"):
+				continue
+			if id == "buff_geodude" and not base_roster.has("geodude"):
+				continue
+			if id == "buff_pikachu" and not base_roster.has("pikachu"):
+				continue
+			if id == "buff_staryu" and not base_roster.has("staryu"):
+				continue
+				
+			# Check unlock level gates
+			# Global modifiers (Tier 2 in columns 1, 2, 3) require level 4+
+			if id in ["upgrade_global_velocity", "upgrade_global_projectiles", "attack_speed"] and level < 4:
+				continue
+				
+			# All checks passed, add to pool
+			filtered.append(upgrade)
+		else:
+			# Non-tree upgrades (Companion Unlocks and Companion Buffs not in tree like buff_rattata)
+			if upgrade.type == UpgradeResource.UpgradeType.UNLOCK_CREATURE:
+				# Unlockable at level 7+ if they don't already own the companion
 				if level >= 7 and not base_roster.has(upgrade.creature_id):
 					filtered.append(upgrade)
-			
-			# COMPANION BUFFS — only if that companion is in the roster
-			UpgradeResource.UpgradeType.COMPANION_BUFF:
+			elif upgrade.type == UpgradeResource.UpgradeType.COMPANION_BUFF:
+				# Like buff_rattata: available if companion owned and buff is not already owned
 				if base_roster.has(upgrade.creature_id):
 					filtered.append(upgrade)
-	
+					
 	return filtered
 
 # --- INTERNAL HANDLER ---

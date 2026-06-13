@@ -50,6 +50,7 @@ var columns = [
 
 var node_positions: Dictionary = {} # Maps "col_row" to Vector2 positions for line drawing
 var node_states: Dictionary = {}    # Maps "col_row" to state (0=locked, 1=available, 2=owned)
+var close_btn: Button = null
 
 @onready var container: Control = Control.new()
 
@@ -87,7 +88,7 @@ func _ready() -> void:
 	add_child(subtitle)
 
 	# Create close button
-	var close_btn = Button.new()
+	close_btn = Button.new()
 	close_btn.text = "[ Close Tech Trees ]"
 	close_btn.flat = true
 	close_btn.add_theme_font_size_override("font_size", 16)
@@ -103,6 +104,11 @@ func _ready() -> void:
 	close_btn.pressed.connect(hide)
 	add_child(close_btn)
 
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and event.is_action_pressed("ui_cancel"):
+		hide()
+		get_viewport().set_input_as_handled()
+
 func open_tree() -> void:
 	# 1. Clean up old node boxes
 	for child in container.get_children():
@@ -111,6 +117,10 @@ func open_tree() -> void:
 	node_positions.clear()
 	node_states.clear()
 	
+	# Grab focus on the close button for controller UI support
+	if close_btn != null:
+		close_btn.grab_focus()
+		
 	# 2. Query player owned upgrades
 	var player = get_tree().current_scene.get_node_or_null("Player")
 	var owned: Array[String] = []
