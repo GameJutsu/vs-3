@@ -10,6 +10,8 @@ const START_Y: float = 140.0
 const COL_SEP: float = 50.0
 const ROW_SEP: float = 65.0
 
+var current_row_height: float = 75.0
+
 # Define the columns and progression pathways
 var columns = [
 	{
@@ -115,6 +117,28 @@ func open_tree() -> void:
 	if player != null and "owned_upgrades" in player:
 		owned = player.owned_upgrades
 		
+	# Calculate dynamic centering and scaling
+	var col_width = COL_WIDTH
+	var col_sep = COL_SEP
+	var row_height = ROW_HEIGHT
+	var row_sep = ROW_SEP
+	
+	var total_width = columns.size() * col_width + (columns.size() - 1) * col_sep
+	
+	# Fit viewport if size is smaller than tree width
+	if size.x < total_width + 40:
+		var ratio = (size.x - 40) / total_width
+		col_width = col_width * ratio
+		col_sep = col_sep * ratio
+		row_height = row_height * ratio
+		row_sep = row_sep * ratio
+		total_width = size.x - 40
+		
+	current_row_height = row_height
+	var start_x = (size.x - total_width) / 2.0
+	var total_height = 3 * row_height + 2 * row_sep
+	var start_y = (size.y - total_height) / 2.0 + 30.0 # offset for headers
+	
 	# 3. Build trees
 	for c_idx in range(columns.size()):
 		var col = columns[c_idx]
@@ -123,10 +147,10 @@ func open_tree() -> void:
 		var header = Label.new()
 		header.text = col.name
 		header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		header.add_theme_font_size_override("font_size", 14)
+		header.add_theme_font_size_override("font_size", clampf(14.0 * (col_width / COL_WIDTH), 10.0, 14.0))
 		header.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9, 1.0))
-		header.position = Vector2(START_X + c_idx * (COL_WIDTH + COL_SEP), START_Y - 35)
-		header.size = Vector2(COL_WIDTH, 20)
+		header.position = Vector2(start_x + c_idx * (col_width + col_sep), start_y - 25)
+		header.size = Vector2(col_width, 20)
 		container.add_child(header)
 		
 		for r_idx in range(col.upgrades.size()):
@@ -152,12 +176,12 @@ func open_tree() -> void:
 			
 			# Create node container box
 			var box = PanelContainer.new()
-			box.size = Vector2(COL_WIDTH, ROW_HEIGHT)
-			var pos = Vector2(START_X + c_idx * (COL_WIDTH + COL_SEP), START_Y + r_idx * (ROW_HEIGHT + ROW_SEP))
+			box.size = Vector2(col_width, row_height)
+			var pos = Vector2(start_x + c_idx * (col_width + col_sep), start_y + r_idx * (row_height + row_sep))
 			box.position = pos
 			
 			# Store center position for line drawing
-			node_positions[key] = pos + Vector2(COL_WIDTH / 2.0, ROW_HEIGHT / 2.0)
+			node_positions[key] = pos + Vector2(col_width / 2.0, row_height / 2.0)
 			
 			# Style box flat
 			var style = StyleBoxFlat.new()
@@ -226,8 +250,8 @@ func _draw() -> void:
 			var key_to = "%d_%d" % [c_idx, r_idx + 1]
 			
 			if node_positions.has(key_from) and node_positions.has(key_to):
-				var pos_from = node_positions[key_from] + Vector2(0, ROW_HEIGHT / 2.0) # Bottom edge center
-				var pos_to = node_positions[key_to] - Vector2(0, ROW_HEIGHT / 2.0)    # Top edge center
+				var pos_from = node_positions[key_from] + Vector2(0, current_row_height / 2.0) # Bottom edge center
+				var pos_to = node_positions[key_to] - Vector2(0, current_row_height / 2.0)    # Top edge center
 				
 				# Get connection state
 				var state_to = node_states.get(key_to, 0)
