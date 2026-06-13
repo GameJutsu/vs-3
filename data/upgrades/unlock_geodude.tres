@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_res")
-title = "Summon Healer"
-description = "Unlocks the Healer companion. Does not attack, but pulses health periodically."
+title = "Summon Geodude"
+description = "Unlocks the Geodude companion. Heavy-hitting punches with large domino knockbacks."
 type = 4
 value = 0.0
-creature_id = "healer"
+creature_id = "geodude"

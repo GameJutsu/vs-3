@@ -36,10 +36,10 @@ var kill_count: int = 0
 @onready var kill_label: Label = $"../CanvasLayer/KillLabel"
 
 # --- COMPANION ROSTER ---
-@onready var creature: Area2D = $"../Creature"
 @onready var companion_label: Label = $"../CanvasLayer/CompanionLabel"
-var roster: Array[String] = ["brawler"]
+var roster: Array[String] = ["rattata"]
 var active_creature_index: int = 0
+var roster_manager: RosterManager = null
 
 # --- JUICE / SQUASH & STRETCH ---
 @onready var sprite: Sprite2D = $Sprite2D
@@ -50,9 +50,9 @@ var deadzone_radius: float = 50.0
 # --- SWAP & WEAPON STATE ---
 var swap_cooldown_timer: float = 0.0
 var swap_cooldown_duration: float = 1.5
+var active_weapon: Node2D = null
 
-# --- INITIALIZATION ---
-# _ready() is called once when the node and its children enter the scene tree.
+
 func _ready() -> void:
 	# Synchronize our initial stats with the UI Progress Bar values
 	health_bar.max_value = max_health
@@ -64,6 +64,25 @@ func _ready() -> void:
 	
 	# Keep track of original sprite scale for squash/stretch lerping
 	_base_sprite_scale = sprite.scale
+
+	# Initialize RosterManager and deploy starting companion
+	roster_manager = RosterManager.new()
+	add_child(roster_manager)
+	roster_manager.deploy_companion(roster[0], global_position, self)
+
+	# Initialize character active weapon
+	var weapon_path: String = ""
+	if GlobalStats.selected_character == "rishu":
+		weapon_path = "res://entities/player/weapons/deck_weapon.tscn"
+	else:
+		weapon_path = "res://entities/player/weapons/maglev_cube.tscn"
+		
+	var weapon_scene = load(weapon_path)
+	if weapon_scene != null:
+		active_weapon = weapon_scene.instantiate()
+		add_child(active_weapon)
+		print("[Player] Spawned weapon: ", weapon_path)
+
 
 # --- PHYSICS UPDATE LOOP ---
 # _physics_process(delta) is called at a fixed frame rate (default 60Hz) for physics calculations.
@@ -112,17 +131,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if get_tree().paused:
 		return
 		
-	# LMB Weapon Fire Trigger
-	var is_left_click: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed
-	if is_left_click:
-		trigger_weapon()
-		
 	# Cycle companion on RMB Click, Spacebar, or C Key
 	var is_right_click: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed
 	var is_cycle_key: bool = event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_C) and event.pressed
 	
 	if is_right_click or is_cycle_key:
 		cycle_creature()
+
 
 func cycle_creature() -> void:
 	if roster.size() <= 1:
@@ -140,8 +155,13 @@ func cycle_creature() -> void:
 	active_creature_index = (active_creature_index + 1) % roster.size()
 	var next_creature_type: String = roster[active_creature_index]
 	
-	if creature != null and is_instance_valid(creature):
-		creature.set_archetype(next_creature_type)
+	# Find active companion position to swap at the exact same location
+	var spawn_pos: Vector2 = global_position
+	if roster_manager != null and roster_manager.active_companion_node != null and is_instance_valid(roster_manager.active_companion_node):
+		spawn_pos = roster_manager.active_companion_node.global_position
+		
+	if roster_manager != null:
+		roster_manager.deploy_companion(next_creature_type, spawn_pos, self)
 		print("[Player] Swapped active companion to: ", next_creature_type)
 	
 	# Reset swap cooldown timer
@@ -151,14 +171,7 @@ func cycle_creature() -> void:
 	SoundManager.play_sound("swap_companion")
 	update_companion_hud()
 
-func trigger_weapon() -> void:
-	print("[Player] Triggered weapon! (Placeholder for Phase 3)")
-	var label: Label = preload("res://ui/damage_number.tscn").instantiate()
-	label.text = "PEW!"
-	label.modulate = Color(0.0, 0.85, 0.9, 1.0)
-	label.global_position = global_position + Vector2(-20, -50)
-	get_parent().call_deferred("add_child", label)
-	SoundManager.play_sound("shoot_projectile")
+
 
 # =========================================================
 # DAMAGE & DEATH LOGIC
@@ -279,12 +292,11 @@ func _on_upgrade_menu_upgrade_selected(data: UpgradeResource) -> void:
 			print("Speed increased to: ", speed)
 		
 		UpgradeResource.UpgradeType.CREATURE_ATTACK_SPEED:
-			# Boost the companion creature's attack lunge speed.
-			# We grab the creature reference from the World node (our parent).
-			var creature = get_parent().get_node("Creature")
-			if creature != null:
-				creature.attack_speed += data.value
-				print("Creature attack speed increased to: ", creature.attack_speed)
+			# Boost the active companion's speed/leash tracking factor
+			if roster_manager != null and roster_manager.active_companion_node != null and is_instance_valid(roster_manager.active_companion_node):
+				var companion = roster_manager.active_companion_node
+				companion.follow_speed += data.value
+				print("Companion follow speed increased to: ", companion.follow_speed)
 		
 		UpgradeResource.UpgradeType.HEAL_PLAYER:
 			# Restore HP instantly, clamped to max_health so we don't overheal
@@ -310,8 +322,13 @@ func unlock_creature(new_id: String) -> void:
 		
 		# Auto-switch to the newly unlocked creature
 		active_creature_index = roster.size() - 1
-		if creature != null and is_instance_valid(creature):
-			creature.set_archetype(new_id)
+		
+		var spawn_pos: Vector2 = global_position
+		if roster_manager != null and roster_manager.active_companion_node != null and is_instance_valid(roster_manager.active_companion_node):
+			spawn_pos = roster_manager.active_companion_node.global_position
+			
+		if roster_manager != null:
+			roster_manager.deploy_companion(new_id, spawn_pos, self)
 			
 		# Spawn floating pop message on player's position
 		var label: Label = preload("res://ui/damage_number.tscn").instantiate()

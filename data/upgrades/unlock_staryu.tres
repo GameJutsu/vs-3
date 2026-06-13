@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_res")
-title = "Summon Orbiter"
-description = "Unlocks the Orbiter companion. Circles around you, slicing all nearby enemies."
+title = "Summon Staryu"
+description = "Unlocks the Staryu companion. Orbits you tightly and fires water bullets outward."
 type = 4
 value = 0.0
-creature_id = "orbiter"
+creature_id = "staryu"

@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://entities/creature/pokemon/golbat.gd" id="1_golbat"]
+
+[sub_resource type="Gradient" id="Gradient_golbat"]
+colors = PackedColorArray(0.2, 0.0, 0.3, 1, 0.5, 0.1, 0.4, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_golbat"]
+gradient = SubResource("Gradient_golbat")
+width = 38
+height = 38
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 19.0
+
+[node name="Golbat" type="Area2D"]
+script = ExtResource("1_golbat")
+follow_speed = 5.2
+follow_distance = 65.0
+base_damage = 22
+base_cooldown = 0.7
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_golbat")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")

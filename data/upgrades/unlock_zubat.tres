@@ -4,8 +4,8 @@
 
 [resource]
 script = ExtResource("1_res")
-title = "Summon Sniper"
-description = "Unlocks the Sniper companion. Stays at range and fires fast projectiles."
+title = "Summon Zubat"
+description = "Unlocks the Zubat companion. Latches health-draining tethers onto nearby enemies."
 type = 4
 value = 0.0
-creature_id = "sniper"
+creature_id = "zubat"

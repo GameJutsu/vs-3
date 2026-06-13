@@ -16,9 +16,10 @@ var upgrade_pool: Array[UpgradeResource] = [
 	preload("res://data/upgrades/attack_speed.tres"),
 	preload("res://data/upgrades/heal.tres"),
 	preload("res://data/upgrades/max_health.tres"),
-	preload("res://data/upgrades/unlock_sniper.tres"),
-	preload("res://data/upgrades/unlock_orbiter.tres"),
-	preload("res://data/upgrades/unlock_healer.tres"),
+	preload("res://data/upgrades/unlock_zubat.tres"),
+	preload("res://data/upgrades/unlock_staryu.tres"),
+	preload("res://data/upgrades/unlock_geodude.tres"),
+	preload("res://data/upgrades/unlock_pikachu.tres"),
 ]
 
 # --- SIGNALS ---

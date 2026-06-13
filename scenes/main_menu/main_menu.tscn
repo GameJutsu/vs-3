@@ -52,7 +52,46 @@ text = "— Tag-Team Horde Survivor —"
 horizontal_alignment = 1
 
 [node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 15)
+layout_mode = 2
+
+[node name="CharSelectTitle" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.85, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "SELECT SURVIVOR"
+horizontal_alignment = 1
+
+[node name="CharSelectHBox" type="HBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="VaibhavBtn" type="Button" parent="CenterContainer/VBoxContainer/CharSelectHBox"]
+custom_minimum_size = Vector2(180, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Vaibhav"
+
+[node name="RishuBtn" type="Button" parent="CenterContainer/VBoxContainer/CharSelectHBox"]
+custom_minimum_size = Vector2(180, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Rishu"
+
+[node name="CharDesc" type="Label" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(400, 60)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1.0)
+theme_override_font_sizes/font_size = 14
+text = "Vaibhav (The Mechanic) fires the Maglev Cube. Hold LMB to solve/wind-up and launch a high-impact explosive blast."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Spacer2" type="Control" parent="CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 15)
 layout_mode = 2
 
 [node name="PlayBtn" type="Button" parent="CenterContainer/VBoxContainer"]
@@ -66,3 +105,4 @@ custom_minimum_size = Vector2(220, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 text = "QUIT TO DESKTOP"
+

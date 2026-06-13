@@ -5,7 +5,6 @@ extends Node2D
 
 # --- CHILD NODE REFERENCES ---
 @onready var player: CharacterBody2D = $Player
-@onready var creature: Area2D = $Creature
 @onready var wave_manager: Node = $WaveManager
 @onready var timer_label: Label = $CanvasLayer/TimerLabel
 @onready var boss_health_bar: ProgressBar = $CanvasLayer/BossHealthBar
@@ -24,8 +23,7 @@ func _ready() -> void:
 	# Unpause the game tree in case we are restarting
 	get_tree().paused = false
 	
-	# Dependency Injection: Tell the creature and wave manager who the player is
-	creature.target_node = player
+	# Dependency Injection: Tell the wave manager who the player is
 	wave_manager.player = player
 	
 	# Hide overlays and boss HP bar

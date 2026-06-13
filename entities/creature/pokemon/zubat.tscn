@@ -1,0 +1,27 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://entities/creature/pokemon/zubat.gd" id="1_zubat"]
+
+[sub_resource type="Gradient" id="Gradient_zubat"]
+colors = PackedColorArray(0.1, 0.05, 0.4, 1, 0.3, 0.2, 0.6, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_zubat"]
+gradient = SubResource("Gradient_zubat")
+width = 30
+height = 30
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 15.0
+
+[node name="Zubat" type="Area2D"]
+script = ExtResource("1_zubat")
+follow_speed = 5.0
+follow_distance = 60.0
+base_damage = 15
+base_cooldown = 0.8
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_zubat")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")

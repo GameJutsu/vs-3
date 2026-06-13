@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://entities/player/weapons/card_projectile.gd" id="1_card"]
+
+[sub_resource type="Gradient" id="Gradient_white"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_card"]
+gradient = SubResource("Gradient_white")
+width = 12
+height = 24
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_card"]
+size = Vector2(12, 24)
+
+[node name="CardProjectile" type="Area2D"]
+script = ExtResource("1_card")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_card")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_card")

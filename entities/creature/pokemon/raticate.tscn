@@ -1,0 +1,44 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://entities/creature/pokemon/raticate.gd" id="1_raticate"]
+
+[sub_resource type="Gradient" id="Gradient_raticate"]
+colors = PackedColorArray(0.5, 0.3, 0.2, 1, 0.7, 0.5, 0.3, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_raticate"]
+gradient = SubResource("Gradient_raticate")
+width = 40
+height = 40
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 20.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_aggro"]
+radius = 180.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_magnet"]
+radius = 240.0
+
+[node name="Raticate" type="Area2D"]
+script = ExtResource("1_raticate")
+follow_speed = 6.0
+follow_distance = 55.0
+base_damage = 30
+base_cooldown = 0.5
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_raticate")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="AggroRange" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AggroRange"]
+shape = SubResource("CircleShape2D_aggro")
+
+[node name="MagnetRange" type="Area2D" parent="."]
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MagnetRange"]
+shape = SubResource("CircleShape2D_magnet")

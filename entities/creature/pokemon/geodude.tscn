@@ -1,0 +1,35 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://entities/creature/pokemon/geodude.gd" id="1_geodude"]
+
+[sub_resource type="Gradient" id="Gradient_geodude"]
+colors = PackedColorArray(0.4, 0.4, 0.4, 1, 0.6, 0.6, 0.6, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_geodude"]
+gradient = SubResource("Gradient_geodude")
+width = 34
+height = 34
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_body"]
+radius = 17.0
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_aggro"]
+radius = 150.0
+
+[node name="Geodude" type="Area2D"]
+script = ExtResource("1_geodude")
+follow_speed = 3.5
+follow_distance = 65.0
+base_damage = 35
+base_cooldown = 1.4
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = SubResource("GradientTexture2D_geodude")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("CircleShape2D_body")
+
+[node name="AggroRange" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AggroRange"]
+shape = SubResource("CircleShape2D_aggro")

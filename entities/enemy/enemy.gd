@@ -26,6 +26,7 @@ const HIT_FLASH_SHADER: Shader = preload("res://assets/shaders/hit_flash.gdshade
 # --- INTERNAL STATE ---
 var target_node: Node2D = null
 var current_hp: int = 0
+var _speed_mult: float = 1.0
 
 # --- CHILD REFERENCES ---
 @onready var sprite: Sprite2D = $Sprite2D
@@ -41,11 +42,25 @@ func _ready() -> void:
 	sprite.material = mat
 
 # --- PHYSICS UPDATE LOOP ---
-func _physics_process(_delta: float) -> void:
+var knockback_velocity: Vector2 = Vector2.ZERO
+
+func _physics_process(delta: float) -> void:
 	if target_node != null:
 		var direction: Vector2 = global_position.direction_to(target_node.global_position)
-		velocity = direction * speed
+		velocity = direction * speed * _speed_mult
+		
+		if knockback_velocity.length() > 5.0:
+			velocity += knockback_velocity
+			# Decay velocity over time
+			knockback_velocity = knockback_velocity.lerp(Vector2.ZERO, 8.0 * delta)
+		else:
+			knockback_velocity = Vector2.ZERO
+			
 		move_and_slide()
+
+func apply_knockback(force: Vector2) -> void:
+	knockback_velocity = force
+
 
 # --- DAMAGE SYSTEM ---
 func take_damage(amount: int) -> void:
@@ -56,6 +71,24 @@ func take_damage(amount: int) -> void:
 	
 	if current_hp <= 0:
 		die()
+
+# --- BLEED STATUS EFFECT ---
+func apply_bleed(dmg: int, duration: float) -> void:
+	var tween: Tween = create_tween()
+	tween.set_loops(int(duration))
+	tween.tween_callback(func():
+		if is_instance_valid(self) and current_hp > 0:
+			take_damage(dmg)
+	).set_delay(1.0)
+
+# --- SLOW STATUS EFFECT ---
+func apply_slow(factor: float, duration: float) -> void:
+	_speed_mult = factor
+	var tween: Tween = create_tween()
+	tween.tween_callback(func():
+		if is_instance_valid(self):
+			_speed_mult = 1.0
+	).set_delay(duration)
 
 # --- HIT FLASH ---
 func _flash_white() -> void:

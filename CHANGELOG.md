@@ -4,6 +4,17 @@ All notable changes to this project are documented in this file. The project adh
 
 ---
 
+## [v1.9.0] - 2026-06-13
+### Added
+- Created Character Selection interface inside [main_menu.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/main_menu/main_menu.tscn) and [main_menu.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/main_menu/main_menu.gd) allowing players to choose between Vaibhav and Rishu.
+- Implemented Vaibhav's **Maglev Cube** weapon ([maglev_cube.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/weapons/maglev_cube.gd), [maglev_cube.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/weapons/maglev_cube.tscn)): a programmatically drawn neon cube orbiting the player, charging and scaling up on LMB hold, lunging at the nearest enemy, detonating a high-trauma AOE blast with physical knockback, and returning scrambled.
+- Implemented Rishu's **Deck** weapon ([deck_weapon.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/weapons/deck_weapon.gd), [deck_weapon.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/weapons/deck_weapon.tscn)): rapid-fires card spreads alternating between piercing Red cards and defensive orbiting Black cards that act as shields before launching towards the target.
+- Created card projectile assets ([card_projectile.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/weapons/card_projectile.gd), [card_projectile.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/weapons/card_projectile.tscn)) with custom modular behaviors and visual overrides.
+- Added smooth physical velocity-based knockbacks to [enemy.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/enemy/enemy.gd) to support heavy kinetic hits.
+- Registered audio sound keys `maglev_solve`, `maglev_explode`, and `card_shoot` in [sound_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/sound_manager.gd).
+
+---
+
 ## [v1.8.0] - 2026-06-13
 ### Added
 - Created [global_stats.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/global_stats.gd) Autoload singleton and registered it in [project.godot](file:///home/deck/Game%20Dev/vs3/vs-3/project.godot) to hold global parameters.

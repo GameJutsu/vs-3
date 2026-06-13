@@ -17,7 +17,10 @@ const SOUND_FILES: Dictionary = {
 	"healer_pulse": "res://assets/sounds/healer_pulse.wav",
 	"brawler_impact": "res://assets/sounds/brawler_impact.wav",
 	"ui_hover": "res://assets/sounds/ui_hover.wav",
-	"ui_click": "res://assets/sounds/ui_click.wav"
+	"ui_click": "res://assets/sounds/ui_click.wav",
+	"maglev_solve": "res://assets/sounds/maglev_solve.wav",
+	"maglev_explode": "res://assets/sounds/maglev_explode.wav",
+	"card_shoot": "res://assets/sounds/card_shoot.wav"
 }
 
 # --- INTERNAL STATE ---
