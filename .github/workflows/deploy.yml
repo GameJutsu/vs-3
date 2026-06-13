@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Godot Web Export
-        uses: firebelley/godot-export@v5.3.0
+        uses: firebelley/godot-export@v8.0.0
         with:
           # Use Godot 4.6.3-stable to match the local project environment
           godot_executable_download_url: https://downloads.tuxfamily.org/godotengine/4.6.3/Godot_v4.6.3-stable_linux.x86_64.zip
