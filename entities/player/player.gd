@@ -57,6 +57,7 @@ var _base_sprite_scale: Vector2 = Vector2(96, 96)
 var swap_cooldown_timer: float = 0.0
 @export var swap_cooldown_duration: float = 1.5
 var active_weapon: Node2D = null
+var owned_upgrades: Array[String] = []
 
 # --- DEBUG ---
 var auto_fire: bool = false
@@ -207,7 +208,10 @@ func cycle_creature() -> void:
 func _on_hurtbox_body_entered(body: Node2D) -> void:
 	# Check if the body belongs to the "enemy" group
 	if body.is_in_group("enemy"):
-		take_damage(20)                     # Apply damage to the player
+		var dmg: int = 20
+		if "contact_damage" in body:
+			dmg = body.contact_damage
+		take_damage(dmg)                     # Apply damage to the player
 		body.die()                          # Instantly destroy the enemy (kamikaze style)
 
 # Function to handle player damage and update UI
@@ -242,10 +246,19 @@ func _on_magnet_radius_area_entered(area: Area2D) -> void:
 # Triggered when a flying gem successfully reaches the player's core center hitbox.
 func _on_hurtbox_area_entered(area: Area2D) -> void:
 	if area.is_in_group("gem"):
-		gain_xp(area.xp_value)
-		# Trigger the gem's pop-and-fade collection animation instead of instant deletion
-		area.collect()
-		SoundManager.play_sound("xp_collect")
+		if area.has_method("collect_cherry"):
+			area.collect_cherry(self)
+		else:
+			gain_xp(area.xp_value)
+			# Trigger the gem's pop-and-fade collection animation instead of instant deletion
+			area.collect()
+			SoundManager.play_sound("xp_collect")
+
+# Handles HP healing
+func heal(amount: int) -> void:
+	current_health = clampi(current_health + amount, 0, max_health)
+	health_bar.value = current_health
+	print("Healed by ", amount, ", HP is now: ", current_health)
 
 # Handles XP gains and progression math
 func gain_xp(amount: int) -> void:
@@ -319,6 +332,10 @@ func _spawn_level_up_particles() -> void:
 # When the player clicks a card, this function receives the chosen UpgradeResource
 # and applies its effect using a match statement on the UpgradeType enum.
 func _on_upgrade_menu_upgrade_selected(data: UpgradeResource) -> void:
+	var upgrade_id = data.resource_path.get_file().get_basename()
+	if not owned_upgrades.has(upgrade_id):
+		owned_upgrades.append(upgrade_id)
+		
 	match data.type:
 		UpgradeResource.UpgradeType.PLAYER_SPEED:
 			# Permanently increase movement speed

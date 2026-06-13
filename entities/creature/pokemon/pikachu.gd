@@ -82,6 +82,9 @@ func _execute_lightning_strike(pos: Vector2, radius: float) -> void:
 	bolt.points = PackedVector2Array(bolt_points)
 	get_parent().call_deferred("add_child", bolt)
 	
+	# Spawn dust burst particles at impact point
+	_spawn_lightning_dust(pos)
+	
 	# Fade out bolt quickly
 	var tween: Tween = create_tween()
 	tween.tween_property(bolt, "width", 0.0, 0.15)
@@ -93,3 +96,28 @@ func _execute_lightning_strike(pos: Vector2, radius: float) -> void:
 		var camera = target_node.get_node("Camera2D")
 		if camera != null and camera.has_method("add_trauma"):
 			camera.add_trauma(0.25)
+
+func _spawn_lightning_dust(pos: Vector2) -> void:
+	var particles: CPUParticles2D = CPUParticles2D.new()
+	particles.global_position = pos
+	particles.amount = 16
+	particles.one_shot = true
+	particles.explosiveness = 0.95
+	particles.lifetime = 0.5
+	particles.spread = 180.0
+	particles.gravity = Vector2.ZERO
+	particles.initial_velocity_min = 40.0
+	particles.initial_velocity_max = 90.0
+	particles.scale_amount_min = 3.0
+	particles.scale_amount_max = 7.0
+	# Yellowish electrical dust color
+	particles.color = Color(1.0, 0.9, 0.3, 0.8)
+	
+	var grad = Gradient.new()
+	grad.colors = PackedColorArray([Color(1.0, 0.9, 0.3, 0.8), Color(0.2, 0.2, 0.2, 0.0)])
+	particles.color_ramp = grad
+	
+	get_parent().call_deferred("add_child", particles)
+	particles.emitting = true
+	
+	get_tree().create_timer(0.6).timeout.connect(particles.queue_free)

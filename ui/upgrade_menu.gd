@@ -39,15 +39,23 @@ signal upgrade_selected(data: UpgradeResource)
 # --- CHILD REFERENCES ---
 @onready var card_container: HBoxContainer = $CenterContainer/VBoxContainer/CardContainer
 @onready var level_label: Label = $CenterContainer/VBoxContainer/LevelLabel
+@onready var tech_tree_panel: ColorRect = $TechTreePanel
 
 func _ready() -> void:
 	# Start hidden — the menu only appears on level-up
 	hide()
+	tech_tree_panel.hide()
+	
+	if has_node("CenterContainer/VBoxContainer/ViewTreeBtn"):
+		$CenterContainer/VBoxContainer/ViewTreeBtn.pressed.connect(_on_view_tree_pressed)
 
 # --- PUBLIC API ---
 # Called by player.gd when a level-up occurs.
 # Freezes the game world, generates 3 filtered upgrade cards, and displays them.
 func open_menu(level: int, player_roster: Array[String] = []) -> void:
+	# Hide tech tree panel on opening
+	tech_tree_panel.hide()
+	
 	# 1. Freeze the entire game physics and processing
 	get_tree().paused = true
 	
@@ -132,5 +140,9 @@ func _build_filtered_pool(level: int, player_roster: Array[String]) -> Array[Upg
 func _on_upgrade_chosen(data: UpgradeResource) -> void:
 	upgrade_selected.emit(data)
 	hide()
+	tech_tree_panel.hide()
 	# Unpause the game world — physics and enemy AI resume instantly
 	get_tree().paused = false
+
+func _on_view_tree_pressed() -> void:
+	tech_tree_panel.open_tree()

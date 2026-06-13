@@ -1,34 +1,15 @@
 extends Area2D
-## Experience Gem Script
-## This script controls the behavior of collectible items (XP gems) in the game world.
-## Gems remain stationary until they enter the player's magnet detection zone,
-## at which point they accelerate towards the player for collection.
+## Health Cherry Script
+## Collectible that heals the player by 25 HP. Magnetizes like a gem.
 
-# --- EXPORTED VARIABLES ---
-@export var xp_value: int = 10
-
-# --- INTERNAL KINEMATICS ---
-var target: Node2D = null                  # The target node we are drawn to (typically the player character)
-var current_speed: float = 0.0             # Starts at 0.0; we accelerate this over time
+var target: Node2D = null
+var current_speed: float = 0.0
 var drift_velocity: Vector2 = Vector2.ZERO # Drift velocity for organic curved movement
-var _collected: bool = false               # Guard flag to prevent double-collection
+var _collected: bool = false
 
-# --- INITIALIZATION ---
 func _ready() -> void:
-	if xp_value >= 100:
-		# Glowing Golden Gem (elites)
-		modulate = Color(1.8, 1.4, 0.2, 1.0) # Golden HDR glow
-		scale = Vector2(1.5, 1.5)
-	elif xp_value >= 50:
-		# Medium gem
-		modulate = Color(1.5, 0.8, 0.0, 1.0) # Orange
-		scale = Vector2(1.2, 1.2)
-	else:
-		# Standard green gem
-		modulate = Color(0.2, 1.0, 0.3, 1.0) # Green
-		scale = Vector2(0.8, 0.8)
+	add_to_group("gem") # So it gets magnetized by player magnet
 
-# --- FRAME-BY-FRAME MOVEMENT ---
 func _process(delta: float) -> void:
 	if target == null or _collected:
 		return
@@ -48,7 +29,6 @@ func _process(delta: float) -> void:
 	if randf() < 0.3:
 		_spawn_sparkle_particle()
 
-# --- PUBLIC INTERFACE ---
 func magnetize_to(new_target: Node2D) -> void:
 	if target == null: # Set drift only on first magnetization
 		target = new_target
@@ -57,16 +37,19 @@ func magnetize_to(new_target: Node2D) -> void:
 		var side = 1.0 if randf() < 0.5 else -1.0
 		drift_velocity = perp * side * randf_range(180.0, 280.0)
 
-# --- COLLECTION WITH VISUAL POP ---
-func collect() -> void:
+func collect_cherry(player: Node2D) -> void:
 	if _collected:
 		return
 	_collected = true
-	
 	$CollisionShape2D.set_deferred("disabled", true)
 	set_process(false)
 	
-	# Play a quick pop: scale up 1.5x and fade out over 0.15 seconds
+	if player.has_method("heal"):
+		player.heal(25)
+	
+	SoundManager.play_sound("healer_pulse")
+	
+	# Play pop animation
 	var tween: Tween = create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(self, "scale", scale * 1.5, 0.15)
@@ -75,9 +58,21 @@ func collect() -> void:
 
 func _spawn_sparkle_particle() -> void:
 	var sparkle = Sparkle.new()
-	sparkle.color = Color(modulate.r * 1.2, modulate.g * 1.2, modulate.b * 1.2, 0.8)
+	# Bright red/crimson sparkle
+	sparkle.color = Color(1.0, 0.2, 0.2, 0.8)
 	sparkle.global_position = global_position + Vector2(randf_range(-4, 4), randf_range(-4, 4))
 	get_parent().add_child(sparkle)
+
+func _draw() -> void:
+	# Draw a cherry!
+	# Red circle for the cherry body
+	draw_circle(Vector2(0, 4), 8.0, Color(0.9, 0.1, 0.1, 1.0))
+	# Draw highlight
+	draw_circle(Vector2(-3, 1), 2.5, Color(1.0, 0.6, 0.6, 0.9))
+	# Draw green stem
+	draw_line(Vector2(0, -2), Vector2(4, -8), Color(0.2, 0.7, 0.1, 1.0), 2.0)
+	# Draw a tiny green leaf
+	draw_circle(Vector2(4, -8), 3.0, Color(0.3, 0.8, 0.2, 1.0))
 
 # --- NESTED SPARKLE PARTICLE CLASS ---
 class Sparkle extends Node2D:
@@ -100,4 +95,3 @@ class Sparkle extends Node2D:
 			Vector2(0, 3), Vector2(-0.8, 0.8), Vector2(-3, 0), Vector2(-0.8, -0.8)
 		])
 		draw_colored_polygon(points, color)
-

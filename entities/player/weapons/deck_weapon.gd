@@ -71,3 +71,23 @@ func _is_player_firing() -> bool:
 	if p != null and p.has_method("is_firing"):
 		return p.is_firing()
 	return Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)
+
+func _process(_delta: float) -> void:
+	queue_redraw()
+
+func _draw() -> void:
+	var has_orbiting_cards: bool = false
+	var orbit_radius: float = 65.0
+	
+	var p = get_parent()
+	if p != null and p.get_parent() != null:
+		for child in p.get_parent().get_children():
+			if "orbiting" in child and child.orbiting and child.orbit_center == p:
+				has_orbiting_cards = true
+				if "orbit_radius" in child:
+					orbit_radius = child.orbit_radius
+				break
+				
+	if has_orbiting_cards:
+		# Draw a faint circular guide line showing the orbit path
+		draw_arc(Vector2.ZERO, orbit_radius, 0.0, TAU, 64, Color(0.3, 0.6, 1.0, 0.15), 1.5, true)

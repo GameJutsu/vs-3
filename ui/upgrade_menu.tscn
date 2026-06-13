@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://ui/upgrade_menu.gd" id="1_menu"]
+[ext_resource type="Script" path="res://ui/tech_tree_panel.gd" id="2_tree"]
 
 [node name="UpgradeMenu" type="ColorRect"]
 process_mode = 3
@@ -18,19 +19,19 @@ anchor_bottom = 1.0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
 layout_mode = 2
-theme_override_constants/separation = 32
+theme_override_constants/separation = 24
 
 [node name="LevelLabel" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(1.0, 0.9, 0.3, 1.0)
-theme_override_font_sizes/font_size = 48
+theme_override_font_sizes/font_size = 44
 text = "LEVEL UP!"
 horizontal_alignment = 1
 
 [node name="SubLabel" type="Label" parent="CenterContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 1.0)
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 16
 text = "Choose an upgrade"
 horizontal_alignment = 1
 
@@ -38,3 +39,19 @@ horizontal_alignment = 1
 layout_mode = 2
 theme_override_constants/separation = 24
 alignment = 1
+
+[node name="ViewTreeBtn" type="Button" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.8, 1.0, 1.0)
+theme_override_font_sizes/font_size = 16
+text = "[ View Tech Trees ]"
+flat = true
+
+[node name="TechTreePanel" type="ColorRect" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.04, 0.06, 0.96)
+script = ExtResource("2_tree")

@@ -19,9 +19,26 @@ const PROJECTILE_SCENE: PackedScene = preload("res://entities/creature/projectil
 var target_node: CharacterBody2D = null
 var current_cooldown: float = 0.0
 
+# --- ANIMATION STATE ---
+var _time_passed: float = 0.0
+var _last_position: Vector2 = Vector2.ZERO
+var _base_scale: Vector2 = Vector2.ONE
+@onready var sprite: Sprite2D = $Sprite2D
+
 func _ready() -> void:
 	# Add to companions group
 	add_to_group("companions")
+	_last_position = global_position
+	
+	# Try to load sprite texture dynamically based on creature_id
+	if creature_id != "":
+		var sprite_path = "res://assets/sprites/" + creature_id + ".png"
+		if sprite != null and FileAccess.file_exists(sprite_path):
+			var tex = load(sprite_path)
+			if tex != null:
+				sprite.texture = tex
+				_base_scale = sprite.scale
+	
 	_custom_ready()
 
 func _custom_ready() -> void:
@@ -36,7 +53,55 @@ func _process(delta: float) -> void:
 	if target_node != null and is_instance_valid(target_node):
 		_follow_player(delta)
 		
+	# Calculate velocity for squash/stretch
+	var travel = global_position - _last_position
+	_last_position = global_position
+	var speed = travel.length() / delta if delta > 0.0 else 0.0
+	
+	# Procedural animations
+	_animate_sprite(delta, speed, travel)
+		
 	_custom_process(delta)
+
+func _animate_sprite(delta: float, speed: float, travel: Vector2) -> void:
+	if sprite == null:
+		return
+		
+	_time_passed += delta
+	
+	# Flip sprite based on movement direction
+	if travel.x > 0.5:
+		sprite.flip_h = false
+	elif travel.x < -0.5:
+		sprite.flip_h = true
+		
+	if speed > 10.0:
+		# Walking animation: fast squash and stretch + translation bounce
+		var bob_frequency = 14.0
+		var bob_amplitude = 6.0
+		var squash_amplitude = 0.12
+		
+		# Sine wave for bounce and squash
+		var cycle = sin(_time_passed * bob_frequency)
+		
+		sprite.position.y = -abs(cycle) * bob_amplitude
+		sprite.scale.x = _base_scale.x * (1.0 + cycle * squash_amplitude)
+		sprite.scale.y = _base_scale.y * (1.0 - cycle * squash_amplitude)
+		
+		# Tilt slightly in movement direction
+		var target_rotation = travel.angle()
+		if sprite.flip_h:
+			target_rotation = target_rotation - PI
+		sprite.rotation = lerp_angle(sprite.rotation, clampf(target_rotation, -0.4, 0.4), 10.0 * delta)
+	else:
+		# Idle animation: gentle float/bounce
+		var idle_frequency = 4.0
+		var idle_amplitude = 3.0
+		var cycle = sin(_time_passed * idle_frequency)
+		
+		sprite.position.y = cycle * idle_amplitude
+		sprite.scale = sprite.scale.lerp(_base_scale, 10.0 * delta)
+		sprite.rotation = lerp_angle(sprite.rotation, 0.0, 10.0 * delta)
 
 func _follow_player(delta: float) -> void:
 	var direction_to_target: Vector2 = global_position.direction_to(target_node.global_position)

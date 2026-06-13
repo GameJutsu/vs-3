@@ -9,6 +9,8 @@ extends CharacterBody2D
 @export var speed: float = 100.0              # Movement speed toward the player
 @export var max_hp: int = 50                  # Total hit points before death
 @export var xp_value: int = 10                # XP gem value dropped on death
+@export var contact_damage: int = 20          # Damage dealt on contact
+@export var is_elite: bool = false            # Whether this is an elite variant
 
 # --- SPLIT-ON-DEATH (Splitter enemy type) ---
 # When enabled, the enemy spawns smaller copies of itself upon death instead of
@@ -33,6 +35,16 @@ var _speed_mult: float = 1.0
 
 # --- INITIALIZATION ---
 func _ready() -> void:
+	if is_elite:
+		max_hp = int(max_hp * 3.0)
+		speed = speed * 1.2
+		contact_damage = int(contact_damage * 1.5)
+		# 1.5x larger scale
+		scale = Vector2(1.5, 1.5)
+		# Neon gold modulate glow
+		sprite.self_modulate = Color(1.5, 1.2, 0.3, 1.0)
+		_setup_elite_trail()
+		
 	current_hp = max_hp
 	
 	# Apply the hit flash shader to the sprite's material.
@@ -73,13 +85,29 @@ func take_damage(amount: int) -> void:
 		die()
 
 # --- BLEED STATUS EFFECT ---
+var is_bleeding: bool = false
+var _bleed_particles: CPUParticles2D = null
+
 func apply_bleed(dmg: int, duration: float) -> void:
+	if not is_bleeding:
+		is_bleeding = true
+		_start_bleed_visuals()
+	
 	var tween: Tween = create_tween()
 	tween.set_loops(int(duration))
 	tween.tween_callback(func():
 		if is_instance_valid(self) and current_hp > 0:
+			_flash_red()
 			take_damage(dmg)
 	).set_delay(1.0)
+	
+	var stop_tween: Tween = create_tween()
+	stop_tween.tween_interval(duration)
+	stop_tween.tween_callback(func():
+		if is_instance_valid(self):
+			is_bleeding = false
+			_stop_bleed_visuals()
+	)
 
 # --- SLOW STATUS EFFECT ---
 func apply_slow(factor: float, duration: float) -> void:
@@ -94,6 +122,7 @@ func apply_slow(factor: float, duration: float) -> void:
 func _flash_white() -> void:
 	if sprite.material is ShaderMaterial:
 		var mat: ShaderMaterial = sprite.material as ShaderMaterial
+		mat.set_shader_parameter("flash_color", Color(1.0, 1.0, 1.0, 1.0))
 		mat.set_shader_parameter("flash_intensity", 1.0)
 		var tween: Tween = create_tween()
 		tween.tween_property(mat, "shader_parameter/flash_intensity", 0.0, 0.1)
@@ -123,10 +152,23 @@ func die() -> void:
 	
 	# 3. Drop an XP gem (unless this is a splitter that only spawns children)
 	if drops_gem:
-		var gem: Area2D = XP_GEM_SCENE.instantiate()
-		gem.global_position = global_position
-		gem.xp_value = xp_value
-		get_parent().call_deferred("add_child", gem)
+		if is_elite:
+			# Roll 50/50 for Golden Gem (100 XP) or Health Cherry (25 HP)
+			if randf() < 0.5:
+				var gem: Area2D = XP_GEM_SCENE.instantiate()
+				gem.global_position = global_position
+				gem.xp_value = 100
+				get_parent().call_deferred("add_child", gem)
+			else:
+				const CHERRY_SCENE: PackedScene = preload("res://items/health_cherry/health_cherry.tscn")
+				var cherry: Area2D = CHERRY_SCENE.instantiate()
+				cherry.global_position = global_position
+				get_parent().call_deferred("add_child", cherry)
+		else:
+			var gem: Area2D = XP_GEM_SCENE.instantiate()
+			gem.global_position = global_position
+			gem.xp_value = xp_value
+			get_parent().call_deferred("add_child", gem)
 		
 	# Play death sound and spawn particles
 	SoundManager.play_sound("enemy_die")
@@ -165,3 +207,69 @@ func _spawn_death_particles() -> void:
 	
 	var timer = get_tree().create_timer(0.6)
 	timer.timeout.connect(particles.queue_free)
+
+func _setup_elite_trail() -> void:
+	var trail: CPUParticles2D = CPUParticles2D.new()
+	trail.name = "EliteTrail"
+	trail.amount = 15
+	trail.lifetime = 0.4
+	trail.local_coords = false # Follow world, not parent node, so it leaves a trail!
+	trail.gravity = Vector2.ZERO
+	trail.spread = 30.0
+	trail.initial_velocity_min = 10.0
+	trail.initial_velocity_max = 30.0
+	trail.scale_amount_min = 3.0
+	trail.scale_amount_max = 6.0
+	
+	# Neon gold trail particles
+	trail.color = Color(1.8, 1.4, 0.2, 0.6)
+	
+	var grad: Gradient = Gradient.new()
+	grad.colors = PackedColorArray([Color(1.8, 1.4, 0.2, 0.6), Color(1.0, 0.5, 0.0, 0.0)])
+	trail.color_ramp = grad
+	
+	add_child(trail)
+	trail.emitting = true
+
+func _start_bleed_visuals() -> void:
+	if _bleed_particles == null:
+		_bleed_particles = CPUParticles2D.new()
+		_bleed_particles.name = "BleedParticles"
+		_bleed_particles.amount = 8
+		_bleed_particles.lifetime = 0.6
+		_bleed_particles.spread = 180.0
+		_bleed_particles.gravity = Vector2(0, 150) # Fall down like droplets!
+		_bleed_particles.initial_velocity_min = 20.0
+		_bleed_particles.initial_velocity_max = 50.0
+		_bleed_particles.scale_amount_min = 2.0
+		_bleed_particles.scale_amount_max = 4.0
+		_bleed_particles.color = Color(0.8, 0.0, 0.0, 1.0) # Dark crimson red
+		
+		var grad: Gradient = Gradient.new()
+		grad.colors = PackedColorArray([Color(0.8, 0.0, 0.0, 1.0), Color(0.8, 0.0, 0.0, 0.0)])
+		_bleed_particles.color_ramp = grad
+		
+		add_child(_bleed_particles)
+		_bleed_particles.emitting = true
+	
+	# Modulate slightly red as a persistent visual cue during bleed
+	sprite.self_modulate = Color(1.0, 0.4, 0.4, 1.0)
+
+func _stop_bleed_visuals() -> void:
+	if _bleed_particles != null:
+		_bleed_particles.queue_free()
+		_bleed_particles = null
+	
+	# Reset modulation
+	if is_elite:
+		sprite.self_modulate = Color(1.5, 1.2, 0.3, 1.0)
+	else:
+		sprite.self_modulate = Color.WHITE
+
+func _flash_red() -> void:
+	if sprite.material is ShaderMaterial:
+		var mat: ShaderMaterial = sprite.material as ShaderMaterial
+		mat.set_shader_parameter("flash_color", Color(1.0, 0.0, 0.0, 1.0))
+		mat.set_shader_parameter("flash_intensity", 0.8)
+		var tween: Tween = create_tween()
+		tween.tween_property(mat, "shader_parameter/flash_intensity", 0.0, 0.15)

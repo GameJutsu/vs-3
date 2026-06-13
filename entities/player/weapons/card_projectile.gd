@@ -27,6 +27,7 @@ func _ready() -> void:
 	# Configure visual appearance
 	if is_red:
 		sprite.modulate = Color(1.0, 0.2, 0.2, 1.0) # Bright Red
+		_setup_red_trail()
 	else:
 		sprite.modulate = Color(0.12, 0.12, 0.16, 1.0) # Sleek dark grey/black
 		# Add a subtle glow/outline to the black card so it's visible in dark mode
@@ -115,3 +116,21 @@ func _spawn_hit_spark(pos: Vector2) -> void:
 	spark.emitting = true
 	
 	get_tree().create_timer(0.4).timeout.connect(spark.queue_free)
+
+func _setup_red_trail() -> void:
+	var trail: CPUParticles2D = CPUParticles2D.new()
+	trail.name = "Trail"
+	trail.amount = 12
+	trail.lifetime = 0.3
+	trail.local_coords = false # Particles stay in world space
+	trail.gravity = Vector2.ZERO
+	trail.scale_amount_min = 2.0
+	trail.scale_amount_max = 5.0
+	trail.color = Color(1.0, 0.2, 0.2, 0.4)
+	
+	var grad = Gradient.new()
+	grad.colors = PackedColorArray([Color(1.0, 0.2, 0.2, 0.4), Color(1.0, 0.2, 0.2, 0.0)])
+	trail.color_ramp = grad
+	
+	add_child(trail)
+	trail.emitting = true

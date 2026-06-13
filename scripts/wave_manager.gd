@@ -123,6 +123,11 @@ func _spawn_enemy() -> void:
 	
 	# Instantiate and position
 	var enemy: CharacterBody2D = chosen_scene.instantiate()
+	
+	# 5% chance to spawn as an Elite variant
+	if randf() < 0.05:
+		enemy.is_elite = true
+		
 	var angle: float = randf() * TAU
 	var spawn_pos: Vector2 = player.global_position + Vector2(
 		cos(angle) * spawn_radius,
