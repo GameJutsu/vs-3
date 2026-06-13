@@ -48,6 +48,58 @@
         "clear": false
       },
       "problemMatcher": []
+    },
+    {
+      "label": "Compiler Check (Headless)",
+      "type": "shell",
+      "command": "/home/deck/Desktop/Godot_v4.6.3-stable_linux.x86_64",
+      "args": [
+        "--headless",
+        "--editor",
+        "--quit"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Process Sprite Background (Transparent)",
+      "type": "shell",
+      "command": "python3",
+      "args": [
+        "scripts/process_sprite.py",
+        "${input:inputPath}",
+        "${input:outputPath}"
+      ],
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": true,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": false
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "inputPath",
+      "description": "Path to the raw generated image (e.g., /home/deck/Downloads/my_sprite.png):",
+      "default": "",
+      "type": "promptString"
+    },
+    {
+      "id": "outputPath",
+      "description": "Output path in res://assets/sprites/ (e.g., assets/sprites/my_sprite.png):",
+      "default": "assets/sprites/",
+      "type": "promptString"
     }
   ]
 }
