@@ -3,11 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://v4mco8rrac0v"
-valid=false
+path="res://.godot/imported/enemy_tall.png-2f7da2fb8b97f6e9c716597839821025.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/sprites/enemy_tall.png"
+dest_files=["res://.godot/imported/enemy_tall.png-2f7da2fb8b97f6e9c716597839821025.ctex"]
 
 [params]
 

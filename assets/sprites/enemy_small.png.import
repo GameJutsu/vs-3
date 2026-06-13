@@ -3,11 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dguwp7khbkejs"
-valid=false
+path="res://.godot/imported/enemy_small.png-0a8927e7f4480f251a450cff06fa23ff.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/sprites/enemy_small.png"
+dest_files=["res://.godot/imported/enemy_small.png-0a8927e7f4480f251a450cff06fa23ff.ctex"]
 
 [params]
 
