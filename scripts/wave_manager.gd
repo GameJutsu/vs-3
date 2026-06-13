@@ -133,6 +133,15 @@ func _spawn_enemy() -> void:
 		cos(angle) * spawn_radius,
 		sin(angle) * spawn_radius
 	)
+	
+	# Clamp spawn positions within the map boundaries (limit margin to prevent sticking)
+	var map_limit: float = 2000.0
+	if get_parent() != null and "map_half_size" in get_parent():
+		map_limit = get_parent().map_half_size
+	var margin: float = 60.0
+	spawn_pos.x = clampf(spawn_pos.x, -map_limit + margin, map_limit - margin)
+	spawn_pos.y = clampf(spawn_pos.y, -map_limit + margin, map_limit - margin)
+	
 	enemy.global_position = spawn_pos
 	enemy.target_node = player
 	get_parent().call_deferred("add_child", enemy)
@@ -144,10 +153,20 @@ func _spawn_boss() -> void:
 	
 	var boss: CharacterBody2D = BOSS_SCENE.instantiate()
 	var angle: float = randf() * TAU
-	boss.global_position = player.global_position + Vector2(
+	var spawn_pos: Vector2 = player.global_position + Vector2(
 		cos(angle) * spawn_radius,
 		sin(angle) * spawn_radius
 	)
+	
+	# Clamp boss spawn positions within map boundaries
+	var map_limit: float = 2000.0
+	if get_parent() != null and "map_half_size" in get_parent():
+		map_limit = get_parent().map_half_size
+	var margin: float = 90.0 # Boss is larger
+	spawn_pos.x = clampf(spawn_pos.x, -map_limit + margin, map_limit - margin)
+	spawn_pos.y = clampf(spawn_pos.y, -map_limit + margin, map_limit - margin)
+	
+	boss.global_position = spawn_pos
 	boss.target_node = player
 	
 	# Connect the boss's death signal so we know when to resume normal spawning

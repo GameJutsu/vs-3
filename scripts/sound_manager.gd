@@ -64,7 +64,7 @@ func _load_single_sound_asset(sound_name: String) -> void:
 		return
 	var path: String = SOUND_FILES[sound_name]
 	
-	if FileAccess.file_exists(path):
+	if ResourceLoader.exists(path):
 		var stream = load(path)
 		if stream != null:
 			_loaded_sounds[sound_name] = stream

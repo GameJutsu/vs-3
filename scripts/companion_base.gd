@@ -33,7 +33,7 @@ func _ready() -> void:
 	# Try to load sprite texture dynamically based on creature_id
 	if creature_id != "":
 		var sprite_path = "res://assets/sprites/" + creature_id + ".png"
-		if sprite != null and FileAccess.file_exists(sprite_path):
+		if sprite != null and ResourceLoader.exists(sprite_path):
 			var tex = load(sprite_path)
 			if tex != null:
 				sprite.texture = tex
