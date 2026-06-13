@@ -127,7 +127,7 @@ func _physics_process(delta: float) -> void:
 	if using_controller:
 		velocity = left_stick * speed
 		
-		# Rotate based on Right Stick, or fallback to Left Stick movement direction
+		# Flip based on Right Stick, or fallback to Left Stick movement direction
 		var look_dir: Vector2 = Vector2.ZERO
 		if right_stick != Vector2.ZERO:
 			look_dir = right_stick
@@ -135,7 +135,11 @@ func _physics_process(delta: float) -> void:
 			look_dir = left_stick
 			
 		if look_dir != Vector2.ZERO:
-			sprite.rotation = look_dir.angle()
+			sprite.rotation = 0.0
+			if look_dir.x < 0.0:
+				sprite.flip_h = true
+			elif look_dir.x > 0.0:
+				sprite.flip_h = false
 			
 		# Squash and stretch squash indicators
 		var is_moving: bool = left_stick != Vector2.ZERO
@@ -157,17 +161,25 @@ func _physics_process(delta: float) -> void:
 		
 		if is_moving:
 			velocity = direction * speed
-			# Face mouse cursor
-			sprite.rotation = direction.angle()
+			# Flip based on direction
+			sprite.rotation = 0.0
+			if direction.x < 0.0:
+				sprite.flip_h = true
+			elif direction.x > 0.0:
+				sprite.flip_h = false
 			
 			# Stretch along direction of motion
 			if not _was_moving:
 				sprite.scale = _base_sprite_scale * Vector2(1.15, 0.85)
 		else:
 			velocity = Vector2.ZERO
-			# Face mouse cursor even when stopped
+			# Flip based on direction even when stopped
 			if dist_to_mouse > 5.0:
-				sprite.rotation = direction.angle()
+				sprite.rotation = 0.0
+				if direction.x < 0.0:
+					sprite.flip_h = true
+				elif direction.x > 0.0:
+					sprite.flip_h = false
 				
 			# Squash when coming to a halt
 			if _was_moving:
