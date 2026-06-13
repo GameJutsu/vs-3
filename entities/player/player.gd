@@ -63,6 +63,21 @@ func _ready() -> void:
 	
 	# Keep track of original sprite scale for squash/stretch lerping
 	_base_sprite_scale = sprite.scale
+	
+	# Load character texture dynamically based on selected_character and scale to 96x96
+	var char_id: String = GlobalStats.selected_character
+	var char_sprite_path: String = "res://assets/sprites/" + char_id + ".png"
+	if ResourceLoader.exists(char_sprite_path):
+		var tex = load(char_sprite_path)
+		if tex != null:
+			sprite.texture = tex
+			var target_size: float = 96.0
+			var tex_size: Vector2 = tex.get_size()
+			var max_dim: float = maxf(tex_size.x, tex_size.y)
+			if max_dim > 0.0:
+				sprite.scale = Vector2(target_size / max_dim, target_size / max_dim)
+			_base_sprite_scale = sprite.scale
+
 
 	# Initialize RosterManager and deploy starting companion
 	roster_manager = RosterManager.new()
