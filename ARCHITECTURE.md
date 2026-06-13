@@ -89,9 +89,11 @@ res://
 │       └── hit_flash.gdshader  # Shader for damage flashes
 ├── data/                       # Game database resources
 │   └── upgrades/               # UpgradeResource data files (.tres)
+├── docs/                       # Design documents and implementation plans
 ├── entities/                   # Characters & interactive actors
 │   ├── player/
-│   │   └── player.gd
+│   │   ├── player.gd
+│   │   └── weapons/            # Weapon classes (Maglev Cube, Card Deck)
 │   ├── enemy/
 │   │   ├── enemy.tscn          # Base Grunt enemy
 │   │   ├── enemy.gd
@@ -100,9 +102,11 @@ res://
 │   │   ├── enemy_splitter.tscn # Splits into splitlings
 │   │   ├── enemy_splitling.tscn# Miniature split offspring
 │   │   └── boss.tscn           # Massive Gym Leader encounter
-│   └── creature/
-│       ├── creature.tscn
-│       └── creature.gd
+│   ├── creature/
+│   │   └── pokemon/            # Individual Pokémon companion scenes & scripts
+│   └── environment/
+│       ├── tree_obstacle.tscn  # Static environmental obstacle
+│       └── tree_obstacle.gd
 ├── items/                      # Collectibles & powerups
 │   └── xp_gem/
 │       ├── xp_gem.tscn
@@ -114,19 +118,26 @@ res://
 ├── scripts/                    # Shared resources & utility controllers
 │   ├── upgrade_resource.gd     # Level-up upgrade resource class
 │   ├── wave_manager.gd         # Wave orchestration & spawning
-│   └── camera_shake.gd         # Camera2D trauma shake system
+│   ├── camera_shake.gd         # Camera2D trauma shake system
+│   ├── companion_base.gd       # Base class for companion Pokémon
+│   ├── roster_manager.gd       # Active squad/roster management
+│   ├── global_stats.gd         # Autoload singleton for global player stats
+│   └── sound_manager.gd        # Autoload singleton for game audio effects
 ├── ui/                         # Reusable UI components
 │   ├── upgrade_card.tscn       # Individual upgrade options
 │   ├── upgrade_card.gd
 │   ├── upgrade_menu.tscn       # Selection wrapper
 │   ├── upgrade_menu.gd
 │   ├── damage_number.tscn      # Floater text scene
-│   └── damage_number.gd
+│   ├── damage_number.gd
+│   ├── minimap.gd              # Control node script for rendering HUD minimap
+│   └── tech_tree_panel.gd      # Visual progression upgrades board
 ├── project.godot
 ├── ARCHITECTURE.md
 ├── CHANGELOG.md
 └── README.md
 ```
+
 
 ---
 
@@ -137,7 +148,9 @@ res://
 | [world.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.gd) | `scenes/world/` | Orchestrates the primary game loop, calculates elapsed survival time, manages the BossHealthBar, and initializes Player dependencies. |
 | [player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/player.gd) | `entities/player/` | Controls movement, HP management, level-up progression, upgrade implementation, and tracks the kill count. |
 | [enemy.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/enemy/enemy.gd) | `entities/enemy/` | Shared AI behavior script for all enemy archetypes. Handles hit flash effects, floating damage numbers, spawning child splitlings, and XP gem drops. |
-| [creature.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/creature/creature.gd) | `entities/creature/` | Companion entity following player and striking targets via a `FOLLOW` → `ATTACK` FSM. |
+| [companion_base.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/companion_base.gd) | `scripts/` | Base class for companion Pokémon. Handles movement kinematics, leashing, and dynamic texture loading. |
+| [roster_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/roster_manager.gd) | `scripts/` | Manages active squad roster slots, evolving companions, and swap cooldown handling. |
+| [sound_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/sound_manager.gd) | `scripts/` | Plays global game sound effects using a pool of audio stream players. |
 | [xp_gem.gd](file:///home/deck/Game%20Dev/vs3/vs-3/items/xp_gem/xp_gem.gd) | `items/xp_gem/` | Magnetic loot object that accelerates toward player and pops visually on collection. |
 | [wave_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/wave_manager.gd) | `scripts/wave_manager.gd` | Escalation director that manages game phases, introduces variant enemies, and triggers the boss event. |
 | [camera_shake.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/camera_shake.gd) | `scripts/camera_shake.gd` | Trauma-based 2D camera shaking using a decaying noise offset. |
@@ -171,9 +184,9 @@ res://
 
 ## 7. Development Roadmap 🚀
 
-### Phase 2: Roster Manager & Companion Systems (NEXT)
-- [ ] Build `RosterManager` node to manage Slot 0, 1, and 2 active states
-- [ ] Program 5 companion Pokémon and their evolved variants:
+### Phase 2: Roster Manager & Companion Systems
+- [x] Build `RosterManager` node to manage Slot 0, 1, and 2 active states
+- [x] Program 5 companion Pokémon and their evolved variants:
   - Rattata → Raticate (dash/bite + magnet radius)
   - Zubat → Golbat (leach drain beam + chain tethers)
   - Staryu → Starmie (orbit bullet circle + orbital sweep laser)
@@ -181,11 +194,19 @@ res://
   - Pikachu → Raichu (random lightning strikes + hazard ground fields)
 
 ### Phase 3: Character Selection & Weapon Systems
-- [ ] Add character choice (Vaibhav / Rishu) to Main Menu
-- [ ] Build Vaibhav's **Maglev Cube** weapon (charge, launch target detonation, return)
-- [ ] Build Rishu's **Deck** weapon (rapid pierce red cards, orbital shield black cards)
+- [x] Add character choice (Vaibhav / Rishu) to Main Menu
+- [x] Build Vaibhav's **Maglev Cube** weapon (charge, launch target detonation, return)
+- [x] Build Rishu's **Deck** weapon (rapid pierce red cards, orbital shield black cards)
 
 ### Phase 4: Upgrade Pool & Evolution Engine
-- [ ] Refactor `UpgradeResource` to support global stats modifiers
-- [ ] Implement evolution trigger when companion upgrades reach exactly 2 count
+- [x] Refactor `UpgradeResource` to support global stats modifiers
+- [x] Implement evolution trigger when companion upgrades reach exactly 2 count
+
+### Phase 5: World Boundaries, Obstacles, and HUD Polish
+- [x] Implement map boundaries and a custom Minimap overlay
+- [x] Spawn programmatically-drawn tree obstacles across the arena
+- [x] Display player/enemy/companion positions dynamically on the minimap
+- [x] Create a Live Stats HUD panel in the CanvasLayer showing core variables
+- [x] Implement developer shortcuts (Auto-Fire toggle, Level-Up boost, Auto-Upgrade test mode)
+
 

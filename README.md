@@ -56,36 +56,52 @@ stateDiagram-v2
 
 ## 📂 Codebase Tour
 
-Below is the directory map with links directly to each module file and key functions:
+Below is the directory map with links directly to each module file:
 
-### Configuration
-*   [project.godot](file:///home/deck/Game%20Dev/vs3/vs-3/project.godot) — Engine configurations, including input, physics engine, and render details.
+### Configuration & Tooling
+*   [project.godot](file:///home/deck/Game%20Dev/vs3/vs-3/project.godot) — Engine configurations, including autoloads, input, rendering, and physics setup.
+*   [export_presets.cfg](file:///home/deck/Game%20Dev/vs3/vs-3/export_presets.cfg) — Presets for compiling to Linux, Windows, and Web.
+*   [scripts/setup_godot.py](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/setup_godot.py) — Automation script used by CI to fetch the Godot runtime.
 
-### Scripts
-*   [player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/player.gd) — Manages the player character.
-    *   [SPEED](file:///home/deck/Game%20Dev/vs3/vs-3/player.gd#L3) - Current player movement speed constant.
-    *   [_physics_process](file:///home/deck/Game%20Dev/vs3/vs-3/player.gd#L23) - Processes character movement and physics.
-    *   [take_damage](file:///home/deck/Game%20Dev/vs3/vs-3/player.gd#L36) - Lowers player health and reloads on death.
-    *   [gain_xp](file:///home/deck/Game%20Dev/vs3/vs-3/player.gd#L58) - Tracks progress, triggers level ups, and updates UI.
-    *   [level_up](file:///home/deck/Game%20Dev/vs3/vs-3/player.gd#L68) - Increases difficulty threshold and levels up.
-*   [creature.gd](file:///home/deck/Game%20Dev/vs3/vs-3/creature.gd) — Handles the helper companion's State Machine.
-    *   [State](file:///home/deck/Game%20Dev/vs3/vs-3/creature.gd#L11) - Enum defining `FOLLOW` and `ATTACK` states.
-    *   [_process](file:///home/deck/Game%20Dev/vs3/vs-3/creature.gd#L14) - Executes state behavior (interpolation/chase).
-    *   [_on_body_entered](file:///home/deck/Game%20Dev/vs3/vs-3/creature.gd#L39) - Transitions state to `ATTACK` when an enemy enters detection range.
-*   [enemy.gd](file:///home/deck/Game%20Dev/vs3/vs-3/enemy.gd) — Enemy behavior.
-    *   [_physics_process](file:///home/deck/Game%20Dev/vs3/vs-3/enemy.gd#L10) - Chases player.
-    *   [die](file:///home/deck/Game%20Dev/vs3/vs-3/enemy.gd#L18) - Spawns XP Gem and safely removes enemy from tree.
-*   [xp_gem.gd](file:///home/deck/Game%20Dev/vs3/vs-3/xp_gem.gd) — XP Gem pickup physics.
-    *   [magnetize_to](file:///home/deck/Game%20Dev/vs3/vs-3/xp_gem.gd#L25) - Starts the attraction phase toward a target node.
-    *   [_process](file:///home/deck/Game%20Dev/vs3/vs-3/xp_gem.gd#L11) - Handles the exponential acceleration towards the collector.
-*   [world.gd](file:///home/deck/Game%20Dev/vs3/vs-3/world.gd) — Spawn timing and scene director.
-    *   [_on_spawn_timer_timeout](file:///home/deck/Game%20Dev/vs3/vs-3/world.gd#L15) - Spawns enemies on a radius circle surrounding the player.
+### Characters & AI Entities
+*   [entities/player/player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/player.gd) — Manages player inputs, stats, XP/level-up progression, and upgrade modifications.
+*   [entities/player/weapons/](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/weapons/) — Contains weapon controllers and projectiles (Maglev Cube and Card Deck).
+*   [scripts/companion_base.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/companion_base.gd) — Base class for all Pokémon companions; handles movement kinematics, squish/stretch, and automatic dynamic sprite loading.
+*   [entities/creature/pokemon/](file:///home/deck/Game%20Dev/vs3/vs-3/entities/creature/pokemon/) — Contains individual Pokémon companion scenes and scripts (Pikachu, Zubat, Geodude, Staryu, Rattata, and their evolved forms).
+*   [entities/enemy/enemy.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/enemy/enemy.gd) — Chases the player, processes stats/scaling, takes damage (flashing red on bleed), and handles splitter/boss mechanics.
 
-### Scenes
-*   [world.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/world.tscn) — The primary game world scene featuring HUD UI elements, spawner nodes, player, and companion.
-*   [creature.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/creature.tscn) — The helper companion scene layout.
-*   [enemy.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/enemy.tscn) — The enemy scene with standard physics collisions.
-*   [xp_gem.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/xp_gem.tscn) — The collectable XP gem scene.
+### Orchestration & Core Scripts
+*   [scenes/world/world.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.gd) — World scene controller; updates timer labels, HUD, and coordinates boss defeat states.
+*   [scripts/wave_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/wave_manager.gd) — Directs wave difficulty progression, introduces sprinter/tank/splitter enemies, and instantiates the climax boss encounter.
+*   [scripts/sound_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/sound_manager.gd) — Autoload audio manager; loads and plays wav sound effects across a reusable stream player pool.
+
+### UI & Overlay Screens
+*   [ui/upgrade_menu.gd](file:///home/deck/Game%20Dev/vs3/vs-3/ui/upgrade_menu.gd) — Handles pause selection cards and houses the fullscreen tech tree.
+*   [ui/tech_tree_panel.gd](file:///home/deck/Game%20Dev/vs3/vs-3/ui/tech_tree_panel.gd) — Dynamic, resizable upgrades progression tree visualizer.
+
+---
+
+## 🤝 Collaboration & Branch Workflow
+
+To keep the project stable for collaborative vibe-coding and additions:
+
+1. **`main` (Production Branch)**:
+   - Locked. **Do not commit directly to `main`**.
+   - Pushes/merges to `main` trigger a GitHub Actions pipeline that automatically exports the game to Web and updates the live site.
+2. **`dev` (Integration Branch)**:
+   - Staging baseline. All features and bugfixes must branch from `dev` and merge back into `dev`.
+3. **Sandbox Feature Branches (`feat/*`, `fix/*`, `refactor/*`)**:
+   - Create a branch for work:
+     ```bash
+     git checkout dev
+     git pull origin dev
+     git checkout -b feat/your-feature
+     ```
+   - Test your scripts locally before committing:
+     ```bash
+     /home/deck/Desktop/Godot_v4.6.3-stable_linux.x86_64 --headless --editor --quit
+     ```
+   - Commit, push, and open a merge request to merge `feat/your-feature` ──> `dev`.
 
 ---
 
