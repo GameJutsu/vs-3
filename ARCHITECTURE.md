@@ -156,10 +156,13 @@ res://
 - [x] WaveManager-based escalation (dynamic enemy pools & speed scaling)
 - [x] Five distinct enemy profiles (Grunt, Sprinter, Tank, Splitter, Splitling)
 - [x] Climax Boss Encounter (Gym Leader) scene & health bar tracker
-- [x] Health, XP, Kill Count, and Survival Timer UI elements
+- [x] Health, XP, Kill Count, and backward-counting Survival Timer UI elements
 - [x] Level-up system with tactical pause and choice-based upgrades
 - [x] Floating damage numbers & hit flash shader feedback on hit
 - [x] XP gem magnetized pickup & pop collection effects
+- [x] Game Over overlay screen on player death (Retry / Menu button connections)
+- [x] Victory overlay screen on Boss defeat (Play Again / Menu button connections)
+- [x] Stylized Main Menu scene with Play & Quit controls
 - [x] Feature-based directory structure
 - [x] Verbose educational comments on all scripts
 - [x] VS Code workspace integration (settings.json, tasks.json)
@@ -169,12 +172,7 @@ res://
 ## 7. Development Roadmap 🚀
 
 ### Phase 4: Remaining Juice & Polish (NEXT)
-- [ ] Squash-and-stretch on player movement changes
-- [ ] Particle emitters for gem pickup and level-up
-- [ ] Audio: xp-pickup pop, attack thud, level-up fanfare, ui-hover click
-
-### Phase 5: Game State & Wrapping
-- [ ] Game Over screen on death
-- [ ] "Survived!" screen at 10-minute mark
-- [ ] Main menu with background gameplay loop
+- [ ] Squash-and-stretch on player movement changes (already baseline added, can refine)
+- [ ] Particle emitters for gem pickup and level-up (already baseline added)
+- [ ] Audio asset compilation: drop WAVs in assets/sounds/ to activate hookups
 

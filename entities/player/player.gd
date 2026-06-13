@@ -3,6 +3,8 @@ extends CharacterBody2D
 ## This script manages the player's movement, health, experience (XP), level-up progression,
 ## and collision interactions with enemies and collectible items (XP gems).
 
+signal died
+
 # --- MOVEMENT ---
 # Changed from 'const' to 'var' so that upgrades can modify it at runtime.
 var speed: float = 300.0                  # Movement speed in pixels per second
@@ -39,6 +41,11 @@ var kill_count: int = 0
 var roster: Array[String] = ["brawler"]
 var active_creature_index: int = 0
 
+# --- JUICE / SQUASH & STRETCH ---
+@onready var sprite: Sprite2D = $Sprite2D
+var _was_moving: bool = false
+var _base_sprite_scale: Vector2 = Vector2(96, 96)
+
 # --- INITIALIZATION ---
 # _ready() is called once when the node and its children enter the scene tree.
 func _ready() -> void:
@@ -49,22 +56,38 @@ func _ready() -> void:
 	xp_bar.max_value = xp_to_next_level
 	xp_bar.value = current_xp
 	update_companion_hud()
+	
+	# Keep track of original sprite scale for squash/stretch lerping
+	_base_sprite_scale = sprite.scale
 
 # --- PHYSICS UPDATE LOOP ---
 # _physics_process(delta) is called at a fixed frame rate (default 60Hz) for physics calculations.
 # This makes physics calculations deterministic and independent of graphics rendering speed.
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	# Input.get_vector() listens for keypresses corresponding to the 4 directions.
-	# It automatically returns a normalized direction vector (length <= 1.0).
-	# This prevents the diagonal movement cheat where moving diagonally is faster (1.414x) than straight movement.
 	var direction: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	
+	# Squash & Stretch Logic (relative to player's base scale)
+	var is_moving: bool = direction.length_squared() > 0.0
+	if is_moving and not _was_moving:
+		# Stretch in direction of movement
+		if abs(direction.x) > abs(direction.y):
+			sprite.scale = _base_sprite_scale * Vector2(1.15, 0.85)
+		else:
+			sprite.scale = _base_sprite_scale * Vector2(0.85, 1.15)
+	elif not is_moving and _was_moving:
+		# Squash when coming to a halt
+		sprite.scale = _base_sprite_scale * Vector2(0.82, 1.18)
+		
+	_was_moving = is_moving
+	
+	# Lerp scale back to normal base scale
+	sprite.scale = sprite.scale.lerp(_base_sprite_scale, 10.0 * delta)
 	
 	# 'velocity' is a built-in property of CharacterBody2D.
 	velocity = direction * speed
 	
 	# move_and_slide() is a built-in method that moves the body along the velocity vector,
-	# automatically resolving collisions (sliding along walls rather than stopping), 
-	# and applying delta internally.
 	move_and_slide()
 
 # --- INPUT HANDLING ---
@@ -90,6 +113,9 @@ func cycle_creature() -> void:
 	if creature != null and is_instance_valid(creature):
 		creature.set_archetype(next_creature_type)
 		print("[Player] Swapped active companion to: ", next_creature_type)
+	
+	# Play companion cycle sound
+	SoundManager.play_sound("swap_companion")
 	update_companion_hud()
 
 # =========================================================
@@ -108,12 +134,15 @@ func take_damage(amount: int) -> void:
 	current_health -= amount
 	health_bar.value = current_health
 	
+	# Play damage sound effect
+	SoundManager.play_sound("player_damage")
+	
 	# Trigger a heavy camera shake — the player just got hit!
 	if camera.has_method("add_trauma"):
 		camera.add_trauma(0.6)
 	
 	if current_health <= 0:
-		get_tree().reload_current_scene()
+		died.emit()
 
 # =========================================================
 # LOOT & XP LOGIC
@@ -135,6 +164,7 @@ func _on_hurtbox_area_entered(area: Area2D) -> void:
 		gain_xp(area.xp_value)
 		# Trigger the gem's pop-and-fade collection animation instead of instant deletion
 		area.collect()
+		SoundManager.play_sound("xp_collect")
 
 # Handles XP gains and progression math
 func gain_xp(amount: int) -> void:
@@ -160,8 +190,37 @@ func level_up() -> void:
 	
 	print("LEVEL UP! Reached level: ", current_level)
 	
+	# Play level up sound and burst particles
+	SoundManager.play_sound("level_up")
+	_spawn_level_up_particles()
+	
 	# Trigger the Tactical Pause — freeze the world and show upgrade cards
 	upgrade_menu.open_menu(current_level)
+
+func _spawn_level_up_particles() -> void:
+	var particles: CPUParticles2D = CPUParticles2D.new()
+	particles.global_position = global_position
+	particles.amount = 40
+	particles.one_shot = true
+	particles.explosiveness = 0.9
+	particles.lifetime = 1.0
+	particles.spread = 180.0
+	particles.gravity = Vector2.ZERO
+	particles.initial_velocity_min = 150.0
+	particles.initial_velocity_max = 300.0
+	particles.scale_amount_min = 6.0
+	particles.scale_amount_max = 12.0
+	particles.color = Color(1.0, 0.9, 0.2, 1.0)
+	
+	var grad: Gradient = Gradient.new()
+	grad.colors = PackedColorArray([Color(1.0, 0.9, 0.2, 1.0), Color(1.0, 0.5, 0.0, 0.0)])
+	particles.color_ramp = grad
+	
+	get_parent().call_deferred("add_child", particles)
+	particles.emitting = true
+	
+	var timer = get_tree().create_timer(1.2)
+	timer.timeout.connect(particles.queue_free)
 
 # =========================================================
 # UPGRADE APPLICATION

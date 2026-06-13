@@ -28,7 +28,7 @@ const BOSS_SCENE: PackedScene = preload("res://entities/enemy/boss.tscn")
 @export var spawn_radius: float = 650.0        # Distance from player to spawn enemies
 @export var base_spawn_interval: float = 1.0   # Starting seconds between spawns
 @export var min_spawn_interval: float = 0.2    # Fastest possible spawn rate
-@export var boss_time: float = 600.0           # Seconds before boss spawns (10 minutes)
+@export var boss_time: float = 300.0           # Seconds before boss spawns (5 minutes)
 
 # --- REFERENCES ---
 var player: Node2D = null
@@ -50,16 +50,16 @@ var _total_weight: float = 0.0
 
 func _ready() -> void:
 	# Build the wave table — each entry is (activation_time_seconds, scene, spawn_weight)
-	wave_table.append(WaveEntry.new(0.0, GRUNT_SCENE, 5.0))        # Minute 0: Grunts dominate
-	wave_table.append(WaveEntry.new(60.0, SPRINTER_SCENE, 2.0))    # Minute 1: Sprinters join
-	wave_table.append(WaveEntry.new(120.0, GRUNT_SCENE, 3.0))      # Minute 2: More grunts
-	wave_table.append(WaveEntry.new(180.0, TANK_SCENE, 1.5))       # Minute 3: Tanks appear
-	wave_table.append(WaveEntry.new(240.0, SPLITTER_SCENE, 2.0))   # Minute 4: Splitters arrive
-	wave_table.append(WaveEntry.new(300.0, SPRINTER_SCENE, 3.0))   # Minute 5: Sprinter surge
-	wave_table.append(WaveEntry.new(360.0, TANK_SCENE, 2.5))       # Minute 6: Heavy tank wave
-	wave_table.append(WaveEntry.new(420.0, SPLITTER_SCENE, 3.0))   # Minute 7: Splitter swarm
-	wave_table.append(WaveEntry.new(480.0, GRUNT_SCENE, 5.0))      # Minute 8: Everything ramps
-	wave_table.append(WaveEntry.new(540.0, SPRINTER_SCENE, 4.0))   # Minute 9: Final chaos
+	wave_table.append(WaveEntry.new(0.0, GRUNT_SCENE, 5.0))        # 0s: Grunts dominate
+	wave_table.append(WaveEntry.new(30.0, SPRINTER_SCENE, 2.0))    # 30s: Sprinters join
+	wave_table.append(WaveEntry.new(60.0, GRUNT_SCENE, 3.0))      # 60s: More grunts
+	wave_table.append(WaveEntry.new(90.0, TANK_SCENE, 1.5))       # 90s: Tanks appear
+	wave_table.append(WaveEntry.new(120.0, SPLITTER_SCENE, 2.0))   # 120s: Splitters arrive
+	wave_table.append(WaveEntry.new(150.0, SPRINTER_SCENE, 3.0))   # 150s: Sprinter surge
+	wave_table.append(WaveEntry.new(180.0, TANK_SCENE, 2.5))       # 180s: Heavy tank wave
+	wave_table.append(WaveEntry.new(210.0, SPLITTER_SCENE, 3.0))   # 210s: Splitter swarm
+	wave_table.append(WaveEntry.new(240.0, GRUNT_SCENE, 5.0))      # 240s: Everything ramps
+	wave_table.append(WaveEntry.new(270.0, SPRINTER_SCENE, 4.0))   # 270s: Final chaos
 
 func _process(delta: float) -> void:
 	if player == null:

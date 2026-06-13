@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file. The project adh
 
 ---
 
+## [v1.7.0] - 2026-06-13
+### Added
+- Created a stylized startup scene [main_menu.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/main_menu/main_menu.tscn) and [main_menu.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/main_menu/main_menu.gd) supporting Start Run and Quit options.
+- Added a game over overlay screen (`GameOverScreen`) to [world.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.tscn) displaying total kills and time survived.
+- Added a victory overlay screen (`VictoryScreen`) to [world.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.tscn) triggered on Boss defeat.
+- Switched default startup scene in [project.godot](file:///home/deck/Game%20Dev/vs3/vs-3/project.godot) to launch the Main Menu.
+
+### Refactored
+- Updated [player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/player.gd) to emit a `died` signal instead of reloading the scene instantly.
+- Rewrote [world.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/world/world.gd) to run a 5-minute (300s) backward countdown timer, spawn the Gym Leader boss on timeout, capture the player's death signal, and map screen overlay button navigation.
+- Compressed escalation curve and boss spawn triggers in [wave_manager.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/wave_manager.gd) to fit the fast-paced 5-minute gameplay loop.
+
+---
+
 ## [v1.6.0] - 2026-06-13
 ### Added
 - Expanded companion system in [creature.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/creature/creature.gd) with 4 archetypes: Brawler (melee), Sniper (ranged), Orbiter (orbiting blades), and Healer (passive healing pulses).

@@ -121,6 +121,7 @@ func _process_brawler(delta: float) -> void:
 					if _time_since_last_attack >= attack_cooldown:
 						_time_since_last_attack = 0.0
 						current_enemy.take_damage(damage)
+						SoundManager.play_sound("brawler_impact")
 						
 						if not is_instance_valid(current_enemy) or current_enemy.current_hp <= 0:
 							current_enemy = null
@@ -182,6 +183,7 @@ func _process_healer(delta: float) -> void:
 		if target_node != null and target_node.has_method("take_damage"):
 			target_node.current_health = clampi(target_node.current_health + 5, 0, target_node.max_health)
 			target_node.health_bar.value = target_node.current_health
+			SoundManager.play_sound("healer_pulse")
 			
 			# Floating +5 label
 			var label: Label = DAMAGE_NUMBER_SCENE.instantiate()
@@ -212,6 +214,7 @@ func _fire_projectile(enemy: Node2D) -> void:
 	bullet.direction = global_position.direction_to(enemy.global_position)
 	bullet.damage = damage
 	get_parent().call_deferred("add_child", bullet)
+	SoundManager.play_sound("shoot_projectile")
 
 # --- SIGNALS: AGGRO DETECTION (Brawler mode only) ---
 func _on_body_entered(body: Node2D) -> void:
@@ -299,6 +302,7 @@ func _trigger_swap_effect() -> void:
 		Archetype.BRAWLER:
 			notification.text = "BRAWLER AOE IMPACT!"
 			get_parent().call_deferred("add_child", notification)
+			SoundManager.play_sound("brawler_impact")
 			
 			# AoE Stun Wave: Damage all enemies in 200px and push them back
 			var shockwave_radius: float = 200.0
@@ -320,6 +324,7 @@ func _trigger_swap_effect() -> void:
 		Archetype.SNIPER:
 			notification.text = "SNIPER BULLET NOVA!"
 			get_parent().call_deferred("add_child", notification)
+			SoundManager.play_sound("shoot_projectile")
 			
 			# Sniper Nova: Fires 8 bullets in a radial circle
 			var num_bullets: int = 8
@@ -335,6 +340,7 @@ func _trigger_swap_effect() -> void:
 		Archetype.ORBITER:
 			notification.text = "ORBIT SHIELD SPEED BOOST!"
 			get_parent().call_deferred("add_child", notification)
+			SoundManager.play_sound("swap_companion")
 			
 			# Orbiter Speed Boost: Doubles rotation speed and boosts radius for 2 seconds
 			_orbiter_boost_time = 2.0
@@ -342,6 +348,7 @@ func _trigger_swap_effect() -> void:
 		Archetype.HEALER:
 			notification.text = "HEALER 15 HP BURST!"
 			get_parent().call_deferred("add_child", notification)
+			SoundManager.play_sound("healer_pulse")
 			
 			# Healer Burst: Heals player for 15 HP instantly
 			if target_node.has_method("take_damage"):

@@ -145,6 +145,146 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 18
 text = "🐾 ROSTER: [BRAWLER]"
 
+[node name="GameOverScreen" type="ColorRect" parent="CanvasLayer"]
+process_mode = 3
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.08, 0.04, 0.04, 0.85)
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/GameOverScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="Title" type="Label" parent="CanvasLayer/GameOverScreen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.1, 0.15, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 48
+text = "GAME OVER"
+horizontal_alignment = 1
+
+[node name="Kills" type="Label" parent="CanvasLayer/GameOverScreen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 22
+text = "Kills: 0"
+horizontal_alignment = 1
+
+[node name="Time" type="Label" parent="CanvasLayer/GameOverScreen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 22
+text = "Time Survived: 00:00"
+horizontal_alignment = 1
+
+[node name="HBox" type="HBoxContainer" parent="CanvasLayer/GameOverScreen/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="RetryBtn" type="Button" parent="CanvasLayer/GameOverScreen/VBox/HBox"]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Retry"
+
+[node name="MenuBtn" type="Button" parent="CanvasLayer/GameOverScreen/VBox/HBox"]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Main Menu"
+
+[node name="VictoryScreen" type="ColorRect" parent="CanvasLayer"]
+process_mode = 3
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.08, 0.04, 0.85)
+
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/VictoryScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -150.0
+offset_right = 200.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="Title" type="Label" parent="CanvasLayer/VictoryScreen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1.0, 0.85, 0.1, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 48
+text = "VICTORY!"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="CanvasLayer/VictoryScreen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 1.0, 0.8, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 24
+text = "YOU SURVIVED!"
+horizontal_alignment = 1
+
+[node name="Kills" type="Label" parent="CanvasLayer/VictoryScreen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1.0)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 22
+text = "Final Kills: 0"
+horizontal_alignment = 1
+
+[node name="HBox" type="HBoxContainer" parent="CanvasLayer/VictoryScreen/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="PlayAgainBtn" type="Button" parent="CanvasLayer/VictoryScreen/VBox/HBox"]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Play Again"
+
+[node name="MenuBtn" type="Button" parent="CanvasLayer/VictoryScreen/VBox/HBox"]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Main Menu"
+
 [node name="UpgradeMenu" parent="CanvasLayer" instance=ExtResource("5_upgrade")]
 
 [connection signal="area_entered" from="Player/Hurtbox" to="Player" method="_on_hurtbox_area_entered"]

@@ -52,6 +52,7 @@ func take_damage(amount: int) -> void:
 	current_hp -= amount
 	_spawn_damage_number(amount)
 	_flash_white()
+	SoundManager.play_sound("enemy_hit")
 	
 	if current_hp <= 0:
 		die()
@@ -93,5 +94,41 @@ func die() -> void:
 		gem.global_position = global_position
 		gem.xp_value = xp_value
 		get_parent().call_deferred("add_child", gem)
+		
+	# Play death sound and spawn particles
+	SoundManager.play_sound("enemy_die")
+	_spawn_death_particles()
 	
 	queue_free()
+
+func _spawn_death_particles() -> void:
+	var particles: CPUParticles2D = CPUParticles2D.new()
+	particles.global_position = global_position
+	particles.amount = 12
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.lifetime = 0.5
+	particles.spread = 180.0
+	particles.gravity = Vector2.ZERO
+	particles.initial_velocity_min = 80.0
+	particles.initial_velocity_max = 160.0
+	particles.scale_amount_min = 4.0
+	particles.scale_amount_max = 8.0
+	
+	var sprite_color: Color = Color.RED
+	if sprite != null and sprite.texture is GradientTexture2D:
+		var grad = (sprite.texture as GradientTexture2D).gradient
+		if grad != null and grad.colors.size() > 0:
+			sprite_color = grad.colors[0]
+			
+	particles.color = sprite_color
+	
+	var grad: Gradient = Gradient.new()
+	grad.colors = PackedColorArray([sprite_color, Color(sprite_color.r, sprite_color.g, sprite_color.b, 0.0)])
+	particles.color_ramp = grad
+	
+	get_parent().call_deferred("add_child", particles)
+	particles.emitting = true
+	
+	var timer = get_tree().create_timer(0.6)
+	timer.timeout.connect(particles.queue_free)

@@ -22,8 +22,15 @@ func setup(data: UpgradeResource) -> void:
 	if data.icon != null:
 		$MarginContainer/VBoxContainer/IconTexture.texture = data.icon
 
+func _ready() -> void:
+	mouse_entered.connect(_on_mouse_entered)
+
+func _on_mouse_entered() -> void:
+	SoundManager.play_sound("ui_hover")
+
 # --- BUTTON PRESS HANDLER ---
 # Connected to the Button's built-in 'pressed' signal.
 # When clicked, we emit our custom 'chosen' signal so the menu can react.
 func _on_pressed() -> void:
+	SoundManager.play_sound("ui_click")
 	chosen.emit(upgrade_data)
