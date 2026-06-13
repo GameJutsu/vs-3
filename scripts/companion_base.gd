@@ -37,6 +37,12 @@ func _ready() -> void:
 			var tex = load(sprite_path)
 			if tex != null:
 				sprite.texture = tex
+				# Scale the sprite so it fits a standard 64x64 boundary box!
+				var target_size: float = 64.0
+				var tex_size: Vector2 = tex.get_size()
+				var max_dim: float = maxf(tex_size.x, tex_size.y)
+				if max_dim > 0.0:
+					sprite.scale = Vector2(target_size / max_dim, target_size / max_dim)
 				_base_scale = sprite.scale
 	
 	_custom_ready()

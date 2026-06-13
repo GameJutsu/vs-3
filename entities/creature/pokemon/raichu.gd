@@ -3,6 +3,7 @@ extends CompanionBase
 ## Lightning strikes leave lingering electrified hazard zones on the ground.
 
 func _custom_ready() -> void:
+	_base_scale = _base_scale * 1.3
 	set_process(true)
 
 func _custom_process(_delta: float) -> void:

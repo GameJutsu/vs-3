@@ -2,11 +2,9 @@
 
 [ext_resource type="Script" uid="uid://dldr3ok003h83" path="res://entities/player/player.gd" id="1_f3sb7"]
 [ext_resource type="Script" uid="uid://c7ia4r07ojgfo" path="res://scenes/world/world.gd" id="1_tlwt5"]
-[ext_resource type="PackedScene" uid="uid://hw1thontpi45" path="res://entities/enemy/enemy.tscn" id="2_aqk2v"]
-[ext_resource type="PackedScene" uid="uid://byhfa7tgt4p2j" path="res://entities/creature/creature.tscn" id="3_aqk2v"]
 [ext_resource type="PackedScene" path="res://ui/upgrade_menu.tscn" id="5_upgrade"]
-[ext_resource type="Script" path="res://scripts/camera_shake.gd" id="6_shake"]
-[ext_resource type="Script" path="res://scripts/wave_manager.gd" id="7_wave"]
+[ext_resource type="Script" uid="uid://csgmoears1rla" path="res://scripts/camera_shake.gd" id="6_shake"]
+[ext_resource type="Script" uid="uid://lfpshdbf8xqb" path="res://scripts/wave_manager.gd" id="7_wave"]
 
 [sub_resource type="PlaceholderTexture2D" id="PlaceholderTexture2D_fj7yv"]
 
@@ -64,7 +62,7 @@ shape = SubResource("RectangleShape2D_aqk2v")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player/MagnetRadius" unique_id=123063369]
 shape = SubResource("CircleShape2D_aqk2v")
 
-[node name="WaveManager" type="Node" parent="."]
+[node name="WaveManager" type="Node" parent="." unique_id=157055714]
 script = ExtResource("7_wave")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1423837304]
@@ -86,7 +84,7 @@ grow_horizontal = 0
 theme_override_styles/fill = SubResource("StyleBoxFlat_036b0")
 value = 37.07
 
-[node name="KillLabel" type="Label" parent="CanvasLayer"]
+[node name="KillLabel" type="Label" parent="CanvasLayer" unique_id=2009823239]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -94,14 +92,14 @@ offset_left = -200.0
 offset_top = 8.0
 offset_bottom = 38.0
 grow_horizontal = 0
-theme_override_colors/font_color = Color(1.0, 0.85, 0.85, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(1, 0.85, 0.85, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 22
 text = "0"
 horizontal_alignment = 2
 
-[node name="TimerLabel" type="Label" parent="CanvasLayer"]
+[node name="TimerLabel" type="Label" parent="CanvasLayer" unique_id=1289587933]
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
@@ -110,14 +108,14 @@ offset_top = 70.0
 offset_right = 100.0
 offset_bottom = 110.0
 grow_horizontal = 2
-theme_override_colors/font_color = Color(1.0, 1.0, 1.0, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 28
 text = "00:00"
 horizontal_alignment = 1
 
-[node name="BossHealthBar" type="ProgressBar" parent="CanvasLayer"]
+[node name="BossHealthBar" type="ProgressBar" parent="CanvasLayer" unique_id=1473431771]
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -132,18 +130,18 @@ grow_vertical = 0
 theme_override_styles/fill = SubResource("StyleBoxFlat_boss_fill")
 value = 100.0
 
-[node name="CompanionLabel" type="Label" parent="CanvasLayer"]
+[node name="CompanionLabel" type="Label" parent="CanvasLayer" unique_id=380524023]
 offset_left = 16.0
 offset_top = 75.0
 offset_right = 400.0
 offset_bottom = 105.0
-theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.95, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 18
 text = "🐾 ROSTER: [BRAWLER]"
 
-[node name="StatsLabel" type="Label" parent="CanvasLayer"]
+[node name="StatsLabel" type="Label" parent="CanvasLayer" unique_id=156883940]
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -153,12 +151,12 @@ offset_right = 280.0
 offset_bottom = -10.0
 grow_vertical = 0
 theme_override_colors/font_color = Color(0.8, 0.9, 0.8, 0.85)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 14
 text = "Stats Loading..."
 
-[node name="GameOverScreen" type="ColorRect" parent="CanvasLayer"]
+[node name="GameOverScreen" type="ColorRect" parent="CanvasLayer" unique_id=1045145627]
 process_mode = 3
 visible = false
 anchors_preset = 15
@@ -168,7 +166,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.08, 0.04, 0.04, 0.85)
 
-[node name="VBox" type="VBoxContainer" parent="CanvasLayer/GameOverScreen"]
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/GameOverScreen" unique_id=1338895917]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -184,51 +182,51 @@ grow_vertical = 2
 theme_override_constants/separation = 15
 alignment = 1
 
-[node name="Title" type="Label" parent="CanvasLayer/GameOverScreen/VBox"]
+[node name="Title" type="Label" parent="CanvasLayer/GameOverScreen/VBox" unique_id=1620726185]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.1, 0.15, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(0.9, 0.1, 0.15, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 48
 text = "GAME OVER"
 horizontal_alignment = 1
 
-[node name="Kills" type="Label" parent="CanvasLayer/GameOverScreen/VBox"]
+[node name="Kills" type="Label" parent="CanvasLayer/GameOverScreen/VBox" unique_id=120992292]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 22
 text = "Kills: 0"
 horizontal_alignment = 1
 
-[node name="Time" type="Label" parent="CanvasLayer/GameOverScreen/VBox"]
+[node name="Time" type="Label" parent="CanvasLayer/GameOverScreen/VBox" unique_id=1937468728]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 22
 text = "Time Survived: 00:00"
 horizontal_alignment = 1
 
-[node name="HBox" type="HBoxContainer" parent="CanvasLayer/GameOverScreen/VBox"]
+[node name="HBox" type="HBoxContainer" parent="CanvasLayer/GameOverScreen/VBox" unique_id=1909686847]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="RetryBtn" type="Button" parent="CanvasLayer/GameOverScreen/VBox/HBox"]
+[node name="RetryBtn" type="Button" parent="CanvasLayer/GameOverScreen/VBox/HBox" unique_id=2005002651]
 custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Retry"
 
-[node name="MenuBtn" type="Button" parent="CanvasLayer/GameOverScreen/VBox/HBox"]
+[node name="MenuBtn" type="Button" parent="CanvasLayer/GameOverScreen/VBox/HBox" unique_id=998127429]
 custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Main Menu"
 
-[node name="VictoryScreen" type="ColorRect" parent="CanvasLayer"]
+[node name="VictoryScreen" type="ColorRect" parent="CanvasLayer" unique_id=1875496908]
 process_mode = 3
 visible = false
 anchors_preset = 15
@@ -238,7 +236,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.04, 0.08, 0.04, 0.85)
 
-[node name="VBox" type="VBoxContainer" parent="CanvasLayer/VictoryScreen"]
+[node name="VBox" type="VBoxContainer" parent="CanvasLayer/VictoryScreen" unique_id=1748362942]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -254,54 +252,53 @@ grow_vertical = 2
 theme_override_constants/separation = 15
 alignment = 1
 
-[node name="Title" type="Label" parent="CanvasLayer/VictoryScreen/VBox"]
+[node name="Title" type="Label" parent="CanvasLayer/VictoryScreen/VBox" unique_id=1380538924]
 layout_mode = 2
-theme_override_colors/font_color = Color(1.0, 0.85, 0.1, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(1, 0.85, 0.1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 48
 text = "VICTORY!"
 horizontal_alignment = 1
 
-[node name="Subtitle" type="Label" parent="CanvasLayer/VictoryScreen/VBox"]
+[node name="Subtitle" type="Label" parent="CanvasLayer/VictoryScreen/VBox" unique_id=1622887868]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 1.0, 0.8, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(0.8, 1, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 24
 text = "YOU SURVIVED!"
 horizontal_alignment = 1
 
-[node name="Kills" type="Label" parent="CanvasLayer/VictoryScreen/VBox"]
+[node name="Kills" type="Label" parent="CanvasLayer/VictoryScreen/VBox" unique_id=1738632358]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1.0)
-theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 6
 theme_override_font_sizes/font_size = 22
 text = "Final Kills: 0"
 horizontal_alignment = 1
 
-[node name="HBox" type="HBoxContainer" parent="CanvasLayer/VictoryScreen/VBox"]
+[node name="HBox" type="HBoxContainer" parent="CanvasLayer/VictoryScreen/VBox" unique_id=532929751]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="PlayAgainBtn" type="Button" parent="CanvasLayer/VictoryScreen/VBox/HBox"]
+[node name="PlayAgainBtn" type="Button" parent="CanvasLayer/VictoryScreen/VBox/HBox" unique_id=38748840]
 custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Play Again"
 
-[node name="MenuBtn" type="Button" parent="CanvasLayer/VictoryScreen/VBox/HBox"]
+[node name="MenuBtn" type="Button" parent="CanvasLayer/VictoryScreen/VBox/HBox" unique_id=1317438078]
 custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Main Menu"
 
-[node name="UpgradeMenu" parent="CanvasLayer" instance=ExtResource("5_upgrade")]
+[node name="UpgradeMenu" parent="CanvasLayer" unique_id=1643993281 instance=ExtResource("5_upgrade")]
 
 [connection signal="area_entered" from="Player/Hurtbox" to="Player" method="_on_hurtbox_area_entered"]
 [connection signal="body_entered" from="Player/Hurtbox" to="Player" method="_on_hurtbox_body_entered"]
 [connection signal="area_entered" from="Player/MagnetRadius" to="Player" method="_on_magnet_radius_area_entered"]
 [connection signal="upgrade_selected" from="CanvasLayer/UpgradeMenu" to="Player" method="_on_upgrade_menu_upgrade_selected"]
-

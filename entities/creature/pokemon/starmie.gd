@@ -9,6 +9,7 @@ var _angle: float = 0.0
 var _laser_line: Line2D = null
 
 func _custom_ready() -> void:
+	_base_scale = _base_scale * 1.3
 	_angle = randf() * TAU
 	
 	# Create Line2D for laser beam graphics

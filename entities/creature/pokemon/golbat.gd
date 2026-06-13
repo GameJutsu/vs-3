@@ -18,6 +18,7 @@ class ChainData:
 		line = l
 
 func _custom_ready() -> void:
+	_base_scale = _base_scale * 1.3
 	set_process(true)
 
 func _custom_process(delta: float) -> void:
