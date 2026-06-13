@@ -1,0 +1,33 @@
+name: "Publish Web Build to GitHub Pages"
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  export-web:
+    runs-on: ubuntu-latest
+    name: Export Web Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Godot Web Export
+        uses: firebelley/godot-export@v5.3.0
+        with:
+          # Use Godot 4.6.3-stable to match the local project environment
+          godot_executable_download_url: https://downloads.tuxfamily.org/godotengine/4.6.3/Godot_v4.6.3-stable_linux.x86_64.zip
+          godot_export_templates_download_url: https://downloads.tuxfamily.org/godotengine/4.6.3/Godot_v4.6.3-stable_export_templates.tpz
+          relative_project_path: ./
+          archive_output: false
+          cache: true
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: /home/runner/.local/share/godot/builds/Web
+          force_orphan: true
