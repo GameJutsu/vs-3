@@ -348,6 +348,9 @@ func level_up() -> void:
 				print("[Debug] Auto-selected upgrade: ", pool[0].title)
 		return
 
+	if hud != null and hud.upgrade_menu != null:
+		hud.upgrade_menu.open_menu(current_level, roster)
+
 func _spawn_level_up_particles() -> void:
 	var particles: CPUParticles2D = CPUParticles2D.new()
 	particles.global_position = global_position
