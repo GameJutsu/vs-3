@@ -1,4 +1,24 @@
-# Godot 4+ specific ignores
+# Godot-specific ignores
 .godot/
+*.uid
 /android/
+
+# Build and export outputs
+build/
+dist/
+bin/
+web_export/
+*.zip
+*.tpz
+
+# Editor binaries
+Godot_v*_linux.*
+godot.zip
+templates.tpz
+
+# IDE settings
+.vscode/
+.idea/
+
+# Custom documentation
 vs3.md
