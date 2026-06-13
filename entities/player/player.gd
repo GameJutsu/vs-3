@@ -52,6 +52,10 @@ var swap_cooldown_timer: float = 0.0
 var active_weapon: Node2D = null
 var owned_upgrades: Array[String] = []
 
+var invulnerability_timer: float = 0.0
+var dash_cooldown_timer: float = 0.0
+var phoenix_used: bool = false
+
 # --- DEBUG ---
 var auto_fire: bool = false
 var debug_mode: bool = false
@@ -60,6 +64,9 @@ var debug_mode: bool = false
 func _ready() -> void:
 	# Connect global EventBus events
 	EventBus.enemy_died.connect(_on_enemy_died)
+	
+	# Initialize Rattata unlock in owned upgrades since it is the starter companion
+	owned_upgrades.append("unlock_rattata")
 	
 	# Keep track of original sprite scale for squash/stretch lerping
 	_base_sprite_scale = sprite.scale
@@ -105,6 +112,10 @@ func _physics_process(delta: float) -> void:
 	# Decrement swap cooldown timer
 	if swap_cooldown_timer > 0.0:
 		swap_cooldown_timer = maxf(swap_cooldown_timer - delta, 0.0)
+	if invulnerability_timer > 0.0:
+		invulnerability_timer = maxf(invulnerability_timer - delta, 0.0)
+	if dash_cooldown_timer > 0.0:
+		dash_cooldown_timer = maxf(dash_cooldown_timer - delta, 0.0)
 		
 	# --- JOYSTICK CONTROLLER INPUT ---
 	var left_stick: Vector2 = Vector2(
@@ -206,6 +217,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if is_right_click or is_cycle_key or is_joy_swap:
 		cycle_creature()
 
+	# Dash key press (Shift on keyboard, or Left/Right shoulder on controller)
+	var is_dash_key: bool = event is InputEventKey and event.keycode == KEY_SHIFT and event.pressed and not event.echo
+	var is_joy_dash: bool = event is InputEventJoypadButton and (event.button_index == JOY_BUTTON_B or event.button_index == JOY_BUTTON_RIGHT_SHOULDER) and event.pressed
+	
+	if (is_dash_key or is_joy_dash) and owned_upgrades.has("blink_dash") and dash_cooldown_timer <= 0.0:
+		trigger_blink_dash()
+
 	# Debug: Toggle auto-fire
 	if event is InputEventKey and event.keycode == KEY_F and event.pressed and not event.echo:
 		auto_fire = !auto_fire
@@ -268,6 +286,9 @@ func _on_hurtbox_body_entered(body: Node2D) -> void:
 
 # Function to handle player damage and update UI
 func take_damage(amount: int) -> void:
+	if invulnerability_timer > 0.0:
+		return
+		
 	current_health = clampi(current_health - amount, 0, max_health)
 	health_changed.emit(current_health, max_health)
 	
@@ -278,7 +299,10 @@ func take_damage(amount: int) -> void:
 	EventBus.camera_shake_requested.emit(0.6)
 	
 	if current_health <= 0:
-		died.emit()
+		if owned_upgrades.has("phoenix_rebirth") and not phoenix_used:
+			trigger_phoenix_rebirth()
+		else:
+			died.emit()
 
 # =========================================================
 # LOOT & XP LOGIC
@@ -433,6 +457,18 @@ func _on_upgrade_menu_upgrade_selected(data: UpgradeResource) -> void:
 			
 		UpgradeResource.UpgradeType.COMPANION_BUFF:
 			_apply_companion_upgrade(data.creature_id)
+			
+		UpgradeResource.UpgradeType.EVOLVE_CREATURE:
+			var base_id = data.creature_id
+			var evolved_id = ""
+			match base_id:
+				"rattata": evolved_id = "raticate"
+				"zubat": evolved_id = "golbat"
+				"staryu": evolved_id = "starmie"
+				"geodude": evolved_id = "graveler"
+				"pikachu": evolved_id = "raichu"
+			if evolved_id != "":
+				evolve_companion(base_id, evolved_id)
 
 func _apply_companion_upgrade(base_id: String) -> void:
 	var count = companion_upgrades.get(base_id, 0) + 1
@@ -445,19 +481,6 @@ func _apply_companion_upgrade(base_id: String) -> void:
 	label.modulate = Color(0.18, 0.76, 1.0, 1.0) # Light blue neon
 	label.global_position = global_position + Vector2(-60, -50)
 	get_parent().call_deferred("add_child", label)
-	
-	# Evolve on exactly 2 upgrades
-	if count == 2:
-		var evolved_id = ""
-		match base_id:
-			"rattata": evolved_id = "raticate"
-			"zubat": evolved_id = "golbat"
-			"staryu": evolved_id = "starmie"
-			"geodude": evolved_id = "graveler"
-			"pikachu": evolved_id = "raichu"
-			
-		if evolved_id != "":
-			evolve_companion(base_id, evolved_id)
 
 func evolve_companion(base_id: String, evolved_id: String) -> void:
 	var idx = roster.find(base_id)
@@ -594,3 +617,65 @@ func _update_stats_hud() -> void:
 
 func is_firing() -> bool:
 	return auto_fire or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) or Input.is_joy_button_pressed(0, JOY_BUTTON_A) or Input.get_joy_axis(0, JOY_AXIS_TRIGGER_RIGHT) > 0.4
+
+
+func trigger_blink_dash() -> void:
+	dash_cooldown_timer = 1.5
+	invulnerability_timer = 0.25
+	
+	var dash_dir: Vector2 = velocity.normalized()
+	if dash_dir == Vector2.ZERO:
+		dash_dir = Vector2.LEFT if sprite.flip_h else Vector2.RIGHT
+		
+	var dash_distance: float = 180.0
+	global_position += dash_dir * dash_distance
+	
+	SoundManager.play_sound("swap_companion")
+	_spawn_dash_particles(dash_dir)
+
+func _spawn_dash_particles(dir: Vector2) -> void:
+	var particles: CPUParticles2D = CPUParticles2D.new()
+	particles.global_position = global_position - dir * 40.0
+	particles.amount = 15
+	particles.one_shot = true
+	particles.explosiveness = 0.8
+	particles.lifetime = 0.4
+	particles.spread = 45.0
+	particles.gravity = Vector2.ZERO
+	particles.initial_velocity_min = 50.0
+	particles.initial_velocity_max = 120.0
+	particles.scale_amount_min = 4.0
+	particles.scale_amount_max = 8.0
+	particles.color = Color(0.2, 0.85, 1.0, 0.7)
+	
+	var grad: Gradient = Gradient.new()
+	grad.colors = PackedColorArray([Color(0.2, 0.85, 1.0, 0.7), Color(0.2, 0.85, 1.0, 0.0)])
+	particles.color_ramp = grad
+	
+	get_parent().call_deferred("add_child", particles)
+	particles.emitting = true
+	
+	var timer = get_tree().create_timer(0.6)
+	timer.timeout.connect(particles.queue_free)
+
+func trigger_phoenix_rebirth() -> void:
+	phoenix_used = true
+	current_health = int(max_health / 2.0)
+	health_changed.emit(current_health, max_health)
+	
+	invulnerability_timer = 1.5
+	
+	EventBus.float_text_requested.emit("PHOENIX REBIRTH!", global_position + Vector2(-80, -70), Color(1.0, 0.4, 0.1, 1.0))
+	SoundManager.play_sound("level_up")
+	
+	var enemies = get_tree().get_nodes_in_group("enemy")
+	for enemy in enemies:
+		if enemy is CharacterBody2D and is_instance_valid(enemy):
+			var dist = global_position.distance_to(enemy.global_position)
+			if dist <= 300.0:
+				enemy.take_damage(60)
+				var push_dir = (enemy.global_position - global_position).normalized()
+				if push_dir == Vector2.ZERO:
+					push_dir = Vector2.RIGHT
+				if enemy.has_method("apply_knockback"):
+					enemy.apply_knockback(push_dir * 800.0)
