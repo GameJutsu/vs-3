@@ -22,3 +22,19 @@ templates.tpz
 
 # Custom documentation
 vs3.md
+
+# Export files at root
+/vs3.html
+/vs3.js
+/vs3.wasm
+/vs3.pck
+/vs3.exe
+/vs3.console.exe
+/vs3.audio.worklet.js
+/vs3.audio.position.worklet.js
+/vs3.png
+/vs3.png.import
+/vs3.icon.png
+/vs3.icon.png.import
+/vs3.apple-touch-icon.png
+/vs3.apple-touch-icon.png.import
