@@ -80,7 +80,9 @@ func _spawn_sparkle_particle() -> void:
 	get_parent().add_child(sparkle)
 
 # --- NESTED SPARKLE PARTICLE CLASS ---
-class Sparkle extends Node2D:
+class Sparkle:
+	extends Node2D
+	
 	var color: Color
 	var scale_speed: float
 	

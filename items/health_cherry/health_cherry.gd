@@ -75,7 +75,9 @@ func _draw() -> void:
 	draw_circle(Vector2(4, -8), 3.0, Color(0.3, 0.8, 0.2, 1.0))
 
 # --- NESTED SPARKLE PARTICLE CLASS ---
-class Sparkle extends Node2D:
+class Sparkle:
+	extends Node2D
+	
 	var color: Color
 	var scale_speed: float
 	

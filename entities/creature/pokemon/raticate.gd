@@ -152,7 +152,9 @@ func _draw() -> void:
 		angle += (dash_len * 2) / radius
 
 # --- NESTED TEETH-CRUNCH EFFECT CLASS ---
-class CrunchEffect extends Node2D:
+class CrunchEffect:
+	extends Node2D
+	
 	var lifetime: float = 0.25
 	var elapsed: float = 0.0
 	
