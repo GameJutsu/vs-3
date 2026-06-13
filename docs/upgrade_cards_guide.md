@@ -11,30 +11,30 @@ The tech tree is structured into 4 columns of 3 tiers. An upgrade is only offere
 ### Column A: Agility
 | Tier | Upgrade ID | Card Title | Description / Effect |
 |:---:|:---|:---|:---|
-| **Tier 1** | `speed_boost` | **Swift Wings** | Adds +50 to base Player Speed |
-| **Tier 2** | `upgrade_global_velocity` | **Tailwind** | Adds +30% to Global Velocity (projectiles, companions, orbits) |
-| **Tier 3** | `buff_zubat` | **Echo-Location** | Doubles Zubat's continuous health-drain beam |
+| **Tier 1** | `speed_boost` | **Swift Wings** | Increases movement speed by 20%. Outrun the horde. |
+| **Tier 2** | `upgrade_global_velocity` | **Kinetic Boost** | Increases global projectile speed and companion velocity by 25%. |
+| **Tier 3** | `buff_zubat` | **Vampiric Drain** | Increases Zubat/Golbat's lifesteal rate and damage by 40%. Accumulating 2 specific Zubat upgrades triggers EVOLUTION. |
 
 ### Column B: Survivability
 | Tier | Upgrade ID | Card Title | Description / Effect |
 |:---:|:---|:---|:---|
-| **Tier 1** | `max_health` | **Iron Shell** | Adds +50 to Max Player HP |
-| **Tier 2** | `heal` | **Nanite Pulse** | Restores +30 Player HP |
-| **Tier 3** | `buff_geodude` | **Solid Rock** | Geodude punches deal knockback and slow enemies by 40% |
+| **Tier 1** | `max_health` | **Iron Constitution** | Permanently raises max HP by 25. Build an unstoppable tank. |
+| **Tier 2** | `heal` | **Healing Pulse** | Restores 30 HP instantly. Survive another wave. |
+| **Tier 3** | `buff_geodude` | **Tectonic Slam** | Increases Geodude/Graveler's punching damage by 40%. Accumulating 2 specific Geodude upgrades triggers EVOLUTION. |
 
 ### Column C: Firepower
 | Tier | Upgrade ID | Card Title | Description / Effect |
 |:---:|:---|:---|:---|
-| **Tier 1** | `upgrade_global_fire_rate` | **Overcharge** | Adds +25% Global Fire Rate (weapons & companions) |
-| **Tier 2** | `upgrade_global_projectiles` | **Split Fire** | Adds +1 Global Projectiles (more weapon cards & companion beams) |
-| **Tier 3** | `buff_pikachu` | **Volt Tackle** | Pikachu calls down chain-lightning strikes |
+| **Tier 1** | `upgrade_global_fire_rate` | **Overclock** | Increases global fire rate by 35%. Faster weapons and faster companion attacks. |
+| **Tier 2** | `upgrade_global_projectiles` | **Split Core** | Adds +1 to global projectiles. Multiplies weapon output and companion count. |
+| **Tier 3** | `buff_pikachu` | **Static Spark** | Increases Pikachu/Raichu's lightning damage by 40%. Accumulating 2 specific Pikachu upgrades triggers EVOLUTION. |
 
 ### Column D: Space
 | Tier | Upgrade ID | Card Title | Description / Effect |
 |:---:|:---|:---|:---|
-| **Tier 1** | `upgrade_global_aoe_radius` | **Expansion** | Adds +30% Global AoE Radius (blast sizes and tethers) |
-| **Tier 2** | `attack_speed` | **Blitz Lunge** | Adds +15% Companion Speed / tracking leash responsiveness |
-| **Tier 3** | `buff_staryu` | **Cosmic Star** | Staryu orbits 40% wider and shoots orbital sweeps |
+| **Tier 1** | `upgrade_global_aoe_radius` | **Nova Expansion** | Increases global area-of-effect radius by 30%. Larger explosions and shockwaves. |
+| **Tier 2** | `attack_speed` | **Feral Instinct** | Your companion attacks 30% faster. Shred through the swarm. |
+| **Tier 3** | `buff_staryu` | **Hydro Turbine** | Increases Staryu/Starmie's water-projectile/laser damage by 40%. Accumulating 2 specific Staryu upgrades triggers EVOLUTION. |
 
 ---
 
@@ -44,13 +44,13 @@ These cards do not belong to the standard tech columns and are offered randomly 
 
 ### Companion Unlocks (Level 7+)
 Unlocks the companion and adds them to the roster (cycles via RMB/Space/C). Only offered if the companion is not already unlocked.
-*   `unlock_zubat` — **Unlock Zubat**
-*   `unlock_staryu` — **Unlock Staryu**
-*   `unlock_geodude` — **Unlock Geodude**
-*   `unlock_pikachu` — **Unlock Pikachu**
+*   `unlock_zubat` — **Summon Zubat** (Unlocks the Zubat companion. Latches health-draining tethers onto nearby enemies.)
+*   `unlock_staryu` — **Summon Staryu** (Unlocks the Staryu companion. Orbits you tightly and fires water bullets outward.)
+*   `unlock_geodude` — **Summon Geodude** (Unlocks the Geodude companion. Heavy-hitting punches with large domino knockbacks.)
+*   `unlock_pikachu` — **Summon Pikachu** (Unlocks the Pikachu companion. Calls down delayed lightning strikes on random enemies.)
 
 ### Starter Buffs
-*   `buff_rattata` — **Feral Instinct**: Increases Rattata's bite damage and doubles its XP magnetization pickup radius. Only offered if Rattata is in the roster.
+*   `buff_rattata` — **Fierce Fangs**: Increases Rattata/Raticate's bite damage by 40%. Accumulating 2 specific Rattata upgrades triggers EVOLUTION. Only offered if Rattata is in the roster.
 
 ---
 
@@ -71,13 +71,13 @@ These cards are only offered if the player is running a specific character:
 ### B. Tier 4 Tech Tree Extensions (Evolution Enhancements)
 Allows further customization after evolving a companion:
 
-*   **Vampiric Chime** (Agility Column Tier 4 - Requires *Echo-Location*)
+*   **Vampiric Chime** (Agility Column Tier 4 - Requires *Vampiric Drain*)
     *   *Effect*: Evolved Golbat's draining beam chains to +2 additional enemies.
-*   **Tectonic Quake** (Survivability Column Tier 4 - Requires *Solid Rock*)
+*   **Tectonic Quake** (Survivability Column Tier 4 - Requires *Tectonic Slam*)
     *   *Effect*: Evolved Graveler's earthquake shockwaves slow enemies by 60% and deal residual damage.
-*   **Static Shock** (Firepower Column Tier 4 - Requires *Volt Tackle*)
+*   **Static Shock** (Firepower Column Tier 4 - Requires *Static Spark*)
     *   *Effect*: Evolved Raichu's lingering shock hazard zones on the floor last 6 seconds instead of 3.
-*   **Nova Beam** (Space Column Tier 4 - Requires *Cosmic Star*)
+*   **Nova Beam** (Space Column Tier 4 - Requires *Hydro Turbine*)
     *   *Effect*: Evolved Starmie's sweeping orbital laser beam rotates 50% faster.
 
 ### C. Tactical Swap Upgrades
