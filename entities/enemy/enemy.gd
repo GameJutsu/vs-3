@@ -34,6 +34,20 @@ var _speed_mult: float = 1.0
 
 # --- INITIALIZATION ---
 func _ready() -> void:
+	# Load cohesive GSC pixel art texture programmatically
+	var is_tall: bool = is_elite or max_hp >= 100
+	var tex_path: String = "res://assets/sprites/enemy_tall.png" if is_tall else "res://assets/sprites/enemy_small.png"
+	
+	if ResourceLoader.exists(tex_path):
+		var tex = load(tex_path)
+		if tex != null and sprite != null:
+			sprite.texture = tex
+			var target_size: float = 96.0 if is_tall else 64.0
+			var tex_size: Vector2 = tex.get_size()
+			var max_dim: float = maxf(tex_size.x, tex_size.y)
+			if max_dim > 0.0:
+				sprite.scale = Vector2(target_size / max_dim, target_size / max_dim)
+
 	if is_elite:
 		max_hp = int(max_hp * 3.0)
 		speed = speed * 1.2
