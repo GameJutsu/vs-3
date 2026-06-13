@@ -59,8 +59,8 @@ func _ready() -> void:
 	var title = Label.new()
 	title.text = "UPGRADE PROGRESSION TREES"
 	title.name = "Title"
-	title.theme_override_font_sizes/font_size = 28
-	title.theme_override_colors/font_color = Color(0.2, 0.8, 1.0, 1.0)
+	title.add_theme_font_size_override("font_size", 28)
+	title.add_theme_color_override("font_color", Color(0.2, 0.8, 1.0, 1.0))
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.anchors_preset = 5 # Top Center
 	title.anchor_left = 0.5
@@ -73,8 +73,8 @@ func _ready() -> void:
 	# Create subtitle
 	var subtitle = Label.new()
 	subtitle.text = "Plan your build. Unlock prerequisites to access stronger upgrades."
-	subtitle.theme_override_font_sizes/font_size = 13
-	subtitle.theme_override_colors/font_color = Color(0.6, 0.65, 0.75, 1.0)
+	subtitle.add_theme_font_size_override("font_size", 13)
+	subtitle.add_theme_color_override("font_color", Color(0.6, 0.65, 0.75, 1.0))
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.anchors_preset = 5
 	subtitle.anchor_left = 0.5
@@ -88,8 +88,8 @@ func _ready() -> void:
 	var close_btn = Button.new()
 	close_btn.text = "[ Close Tech Trees ]"
 	close_btn.flat = true
-	close_btn.theme_override_font_sizes/font_size = 16
-	close_btn.theme_override_colors/font_color = Color(0.9, 0.3, 0.3, 1.0)
+	close_btn.add_theme_font_size_override("font_size", 16)
+	close_btn.add_theme_color_override("font_color", Color(0.9, 0.3, 0.3, 1.0))
 	close_btn.anchors_preset = 7 # Bottom Center
 	close_btn.anchor_left = 0.5
 	close_btn.anchor_top = 1.0
@@ -123,8 +123,8 @@ func open_tree() -> void:
 		var header = Label.new()
 		header.text = col.name
 		header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		header.theme_override_font_sizes/font_size = 14
-		header.theme_override_colors/font_color = Color(0.7, 0.8, 0.9, 1.0)
+		header.add_theme_font_size_override("font_size", 14)
+		header.add_theme_color_override("font_color", Color(0.7, 0.8, 0.9, 1.0))
 		header.position = Vector2(START_X + c_idx * (COL_WIDTH + COL_SEP), START_Y - 35)
 		header.size = Vector2(COL_WIDTH, 20)
 		container.add_child(header)
@@ -196,13 +196,13 @@ func open_tree() -> void:
 			var title_lbl = Label.new()
 			title_lbl.text = upg.title
 			title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			title_lbl.theme_override_font_sizes/font_size = 12
+			title_lbl.add_theme_font_size_override("font_size", 12)
 			
 			# Title text color
 			match state:
-				2: title_lbl.theme_override_colors/font_color = Color(0.5, 1.0, 0.6, 1.0)
-				1: title_lbl.theme_override_colors/font_color = Color(1.0, 0.9, 0.4, 1.0)
-				0: title_lbl.theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1.0)
+				2: title_lbl.add_theme_color_override("font_color", Color(0.5, 1.0, 0.6, 1.0))
+				1: title_lbl.add_theme_color_override("font_color", Color(1.0, 0.9, 0.4, 1.0))
+				0: title_lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5, 1.0))
 				
 			vbox.add_child(title_lbl)
 			
@@ -210,8 +210,8 @@ func open_tree() -> void:
 			var desc_lbl = Label.new()
 			desc_lbl.text = upg.desc
 			desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			desc_lbl.theme_override_font_sizes/font_size = 10
-			desc_lbl.theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1.0) if state > 0 else Color(0.4, 0.4, 0.4, 1.0)
+			desc_lbl.add_theme_font_size_override("font_size", 10)
+			desc_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 1.0) if state > 0 else Color(0.4, 0.4, 0.4, 1.0))
 			vbox.add_child(desc_lbl)
 	
 	show()
