@@ -133,9 +133,8 @@ func _execute_drain() -> void:
 						total_healed += int(dmg * 0.75 * heal_fraction)
 			
 	# Heal player
-	if total_healed > 0 and target_node != null and target_node.has_method("take_damage"):
-		target_node.current_health = clampi(target_node.current_health + total_healed, 0, target_node.max_health)
-		target_node.health_bar.value = target_node.current_health
+	if total_healed > 0 and target_node != null and target_node.has_method("heal"):
+		target_node.heal(total_healed)
 		
 		var label: Label = DAMAGE_NUMBER_SCENE.instantiate()
 		label.text = "+" + str(total_healed)
