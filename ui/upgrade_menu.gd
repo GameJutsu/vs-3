@@ -111,12 +111,12 @@ func _build_filtered_pool(level: int, player_roster: Array[String], owned: Array
 			"raichu": base_roster.append("pikachu")
 			_: base_roster.append(creature)
 			
-	# Tech Tree Columns progression mapping
+	# Tech Tree Columns progression mapping (Player/Global upgrades only)
 	var tree_columns = [
-		["speed_boost", "upgrade_global_velocity", "buff_zubat"],
-		["max_health", "heal", "buff_geodude"],
-		["upgrade_global_fire_rate", "upgrade_global_projectiles", "buff_pikachu"],
-		["upgrade_global_aoe_radius", "attack_speed", "buff_staryu"]
+		["speed_boost", "upgrade_global_velocity"],
+		["max_health", "heal"],
+		["upgrade_global_fire_rate", "upgrade_global_projectiles"],
+		["upgrade_global_aoe_radius", "attack_speed"]
 	]
 	
 	for upgrade in upgrade_pool:
@@ -147,30 +147,16 @@ func _build_filtered_pool(level: int, player_roster: Array[String], owned: Array
 				continue # Parent prerequisite is not met
 				
 			# Special check: If this is a companion buff node (Tier 3), player must own the companion
-			if id == "buff_zubat" and not base_roster.has("zubat"):
-				continue
-			if id == "buff_geodude" and not base_roster.has("geodude"):
-				continue
-			if id == "buff_pikachu" and not base_roster.has("pikachu"):
-				continue
-			if id == "buff_staryu" and not base_roster.has("staryu"):
-				continue
-				
-			# Check unlock level gates
-			# Global modifiers (Tier 2 in columns 1, 2, 3) require level 4+
-			if id in ["upgrade_global_velocity", "upgrade_global_projectiles", "attack_speed"] and level < 4:
-				continue
-				
 			# All checks passed, add to pool
 			filtered.append(upgrade)
 		else:
-			# Non-tree upgrades (Companion Unlocks and Companion Buffs not in tree like buff_rattata)
+			# Non-tree upgrades (Companion Unlocks and Companion Buffs)
 			if upgrade.type == UpgradeResource.UpgradeType.UNLOCK_CREATURE:
-				# Unlockable at level 7+ if they don't already own the companion
-				if level >= 7 and not base_roster.has(upgrade.creature_id):
+				# Unlockable if they don't already own the companion (no level gate)
+				if not base_roster.has(upgrade.creature_id):
 					filtered.append(upgrade)
 			elif upgrade.type == UpgradeResource.UpgradeType.COMPANION_BUFF:
-				# Like buff_rattata: available if companion owned and buff is not already owned
+				# Available if companion owned and buff is not already owned
 				if base_roster.has(upgrade.creature_id):
 					filtered.append(upgrade)
 					
