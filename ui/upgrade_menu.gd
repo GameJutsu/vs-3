@@ -20,6 +20,15 @@ var upgrade_pool: Array[UpgradeResource] = [
 	preload("res://data/upgrades/unlock_staryu.tres"),
 	preload("res://data/upgrades/unlock_geodude.tres"),
 	preload("res://data/upgrades/unlock_pikachu.tres"),
+	preload("res://data/upgrades/upgrade_global_projectiles.tres"),
+	preload("res://data/upgrades/upgrade_global_fire_rate.tres"),
+	preload("res://data/upgrades/upgrade_global_aoe_radius.tres"),
+	preload("res://data/upgrades/upgrade_global_velocity.tres"),
+	preload("res://data/upgrades/buff_rattata.tres"),
+	preload("res://data/upgrades/buff_zubat.tres"),
+	preload("res://data/upgrades/buff_staryu.tres"),
+	preload("res://data/upgrades/buff_geodude.tres"),
+	preload("res://data/upgrades/buff_pikachu.tres"),
 ]
 
 # --- SIGNALS ---

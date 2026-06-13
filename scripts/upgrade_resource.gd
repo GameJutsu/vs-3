@@ -21,8 +21,14 @@ enum UpgradeType {
 	HEAL_PLAYER,             # Restores HP instantly
 	MAX_HEALTH,              # Permanently raises the HP cap
 	UNLOCK_CREATURE,         # Unlocks a new companion type
+	GLOBAL_PROJECTILES,      # Adds +1 to global projectiles
+	GLOBAL_FIRE_RATE,        # Multiplies global fire rate
+	GLOBAL_AOE_RADIUS,       # Multiplies global impact/explosion radius
+	GLOBAL_VELOCITY,         # Multiplies global movement/orbit speed
+	COMPANION_BUFF,          # Upgrades a specific companion's performance
 }
 @export var type: UpgradeType
+
 
 # The numerical magnitude of the upgrade effect (e.g., 50.0 for speed, 30 for heal).
 @export var value: float = 0.0

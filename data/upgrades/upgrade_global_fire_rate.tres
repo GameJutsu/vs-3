@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UpgradeResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_resource.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+title = "Overclock"
+description = "Increases global fire rate by 35%. Fasters weapons and faster companion attacks."
+type = 6
+value = 0.35
+creature_id = ""

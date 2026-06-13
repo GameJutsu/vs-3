@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UpgradeResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_resource.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+title = "Tectonic Slam"
+description = "Increases Geodude/Graveler's punching damage by 40%. Accumulating 2 specific Geodude upgrades triggers EVOLUTION."
+type = 9
+value = 1.0
+creature_id = "geodude"

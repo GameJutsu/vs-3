@@ -55,9 +55,29 @@ func on_swap_in() -> void:
 func _custom_swap_in() -> void:
 	pass
 
-# Helper to calculate damage scaling with global stats
+# --- UPGRADE & SCALING SYSTEM ---
+var creature_id: String = ""
+
+## Queries the player to find how many upgrades this companion type has received.
+## Maps evolved forms back to their base forms so upgrades persist across evolution.
+func get_upgrade_count() -> int:
+	if target_node != null and target_node.has_method("get_companion_upgrade_count"):
+		var base_id: String = creature_id
+		match creature_id:
+			"raticate": base_id = "rattata"
+			"golbat": base_id = "zubat"
+			"starmie": base_id = "staryu"
+			"graveler": base_id = "geodude"
+			"raichu": base_id = "pikachu"
+		return target_node.get_companion_upgrade_count(base_id)
+	return 0
+
+# Helper to calculate damage scaling with upgrades and global stats
 func get_damage() -> int:
-	return base_damage
+	var bonus_mult = 1.0 + (0.4 * get_upgrade_count())
+	return int(base_damage * bonus_mult)
 
 func get_cooldown() -> float:
-	return base_cooldown / GlobalStats.global_fire_rate_mult
+	var bonus_mult = 1.0 + (0.35 * get_upgrade_count())
+	return base_cooldown / (GlobalStats.global_fire_rate_mult * bonus_mult)
+

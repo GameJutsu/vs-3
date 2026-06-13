@@ -40,6 +40,11 @@ var kill_count: int = 0
 var roster: Array[String] = ["rattata"]
 var active_creature_index: int = 0
 var roster_manager: RosterManager = null
+var companion_upgrades: Dictionary = {}         # Tracks companion-specific upgrade counts (base_id -> count)
+
+func get_companion_upgrade_count(base_id: String) -> int:
+	return companion_upgrades.get(base_id, 0)
+
 
 # --- JUICE / SQUASH & STRETCH ---
 @onready var sprite: Sprite2D = $Sprite2D
@@ -314,6 +319,122 @@ func _on_upgrade_menu_upgrade_selected(data: UpgradeResource) -> void:
 			
 		UpgradeResource.UpgradeType.UNLOCK_CREATURE:
 			unlock_creature(data.creature_id)
+			
+		UpgradeResource.UpgradeType.GLOBAL_PROJECTILES:
+			GlobalStats.global_projectiles += int(data.value)
+			print("Global Projectiles upgraded to: ", GlobalStats.global_projectiles)
+			
+		UpgradeResource.UpgradeType.GLOBAL_FIRE_RATE:
+			GlobalStats.global_fire_rate_mult += data.value
+			print("Global Fire Rate upgraded to: ", GlobalStats.global_fire_rate_mult)
+			
+		UpgradeResource.UpgradeType.GLOBAL_AOE_RADIUS:
+			GlobalStats.global_aoe_radius += data.value
+			print("Global AoE Radius upgraded to: ", GlobalStats.global_aoe_radius)
+			
+		UpgradeResource.UpgradeType.GLOBAL_VELOCITY:
+			GlobalStats.global_velocity_mult += data.value
+			print("Global Velocity upgraded to: ", GlobalStats.global_velocity_mult)
+			
+		UpgradeResource.UpgradeType.COMPANION_BUFF:
+			_apply_companion_upgrade(data.creature_id)
+
+func _apply_companion_upgrade(base_id: String) -> void:
+	var count = companion_upgrades.get(base_id, 0) + 1
+	companion_upgrades[base_id] = count
+	print("Companion ", base_id, " upgraded! Current count: ", count)
+	
+	# Spawn popup warning/message
+	var label: Label = preload("res://ui/damage_number.tscn").instantiate()
+	label.text = base_id.to_upper() + " POWER UP!"
+	label.modulate = Color(0.18, 0.76, 1.0, 1.0) # Light blue neon
+	label.global_position = global_position + Vector2(-60, -50)
+	get_parent().call_deferred("add_child", label)
+	
+	# Evolve on exactly 2 upgrades
+	if count == 2:
+		var evolved_id = ""
+		match base_id:
+			"rattata": evolved_id = "raticate"
+			"zubat": evolved_id = "golbat"
+			"staryu": evolved_id = "starmie"
+			"geodude": evolved_id = "graveler"
+			"pikachu": evolved_id = "raichu"
+			
+		if evolved_id != "":
+			evolve_companion(base_id, evolved_id)
+
+func evolve_companion(base_id: String, evolved_id: String) -> void:
+	var idx = roster.find(base_id)
+	if idx != -1:
+		roster[idx] = evolved_id
+		print("[Player] Evolving ", base_id, " -> ", evolved_id)
+		
+		var spawn_pos = global_position
+		var active_was_evolved = false
+		if roster_manager != null and roster_manager.active_companion_node != null and is_instance_valid(roster_manager.active_companion_node):
+			if roster_manager.active_companion_node.creature_id == base_id:
+				spawn_pos = roster_manager.active_companion_node.global_position
+				active_was_evolved = true
+				
+		if active_was_evolved and roster_manager != null:
+			roster_manager.deploy_companion(evolved_id, spawn_pos, self)
+			
+		# Fanfare and visuals
+		SoundManager.play_sound("level_up")
+		_trigger_evolution_flash()
+		_spawn_evolution_particles(spawn_pos)
+		
+		# Banner text
+		var label: Label = preload("res://ui/damage_number.tscn").instantiate()
+		label.text = base_id.to_upper() + " EVOLVED INTO " + evolved_id.to_upper() + "!"
+		label.modulate = Color(1.0, 0.85, 0.1, 1.0) # Golden yellow
+		label.global_position = spawn_pos + Vector2(-120, -70)
+		get_parent().call_deferred("add_child", label)
+		
+		update_companion_hud()
+
+func _trigger_evolution_flash() -> void:
+	var canvas = $"../CanvasLayer"
+	if canvas != null:
+		var flash = ColorRect.new()
+		flash.color = Color(1.0, 1.0, 1.0, 1.0)
+		flash.anchors_preset = 15 # Full screen
+		canvas.add_child(flash)
+		
+		var tween = create_tween()
+		tween.tween_property(flash, "modulate:a", 0.0, 0.5)
+		tween.tween_callback(flash.queue_free)
+
+func _spawn_evolution_particles(pos: Vector2) -> void:
+	var particles: CPUParticles2D = CPUParticles2D.new()
+	particles.global_position = pos
+	particles.amount = 50
+	particles.one_shot = true
+	particles.explosiveness = 0.95
+	particles.lifetime = 1.0
+	particles.spread = 180.0
+	particles.gravity = Vector2.ZERO
+	particles.initial_velocity_min = 180.0
+	particles.initial_velocity_max = 350.0
+	particles.scale_amount_min = 6.0
+	particles.scale_amount_max = 14.0
+	
+	particles.color = Color(1.0, 0.88, 0.2, 1.0)
+	var grad: Gradient = Gradient.new()
+	grad.colors = PackedColorArray([
+		Color(1.0, 0.88, 0.2, 1.0),
+		Color(1.0, 0.45, 0.0, 1.0),
+		Color(0.2, 0.85, 1.0, 0.0)
+	])
+	particles.color_ramp = grad
+	
+	get_parent().call_deferred("add_child", particles)
+	particles.emitting = true
+	
+	var timer = get_tree().create_timer(1.2)
+	timer.timeout.connect(particles.queue_free)
+
 
 func unlock_creature(new_id: String) -> void:
 	if not roster.has(new_id):

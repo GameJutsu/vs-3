@@ -42,7 +42,7 @@ func _create_tether(enemy: Node2D) -> void:
 	add_child(line)
 	_active_tethers[enemy] = line
 
-func _remove_tether(enemy: Node2D) -> void:
+func _remove_tether(enemy: Variant) -> void:
 	if _active_tethers.has(enemy):
 		var line = _active_tethers[enemy]
 		if is_instance_valid(line):

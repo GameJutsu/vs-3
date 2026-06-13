@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="UpgradeResource" format=3]
+
+[ext_resource type="Script" path="res://scripts/upgrade_resource.gd" id="1_res"]
+
+[resource]
+script = ExtResource("1_res")
+title = "Nova Expansion"
+description = "Increases global area-of-effect radius by 30%. Larger explosions and shockwaves."
+type = 7
+value = 0.3
+creature_id = ""

@@ -32,12 +32,14 @@ func deploy_companion(id: String, spawn_position: Vector2, target_player: Charac
 		
 	var scene: PackedScene = SCENES[id]
 	var companion: CompanionBase = scene.instantiate()
+	companion.creature_id = id
 	companion.global_position = spawn_position
 	companion.target_node = target_player
 	
 	# Add to World (sibling of Player)
 	target_player.get_parent().call_deferred("add_child", companion)
 	active_companion_node = companion
+
 	
 	# Trigger custom swap entrance effects if any
 	if companion.has_method("on_swap_in"):

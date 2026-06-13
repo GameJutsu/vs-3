@@ -54,7 +54,7 @@ func _create_tether(enemy: Node2D) -> void:
 	_primary_tethers[enemy] = line
 	_chains[enemy] = []
 
-func _remove_tether(enemy: Node2D) -> void:
+func _remove_tether(enemy: Variant) -> void:
 	if _primary_tethers.has(enemy):
 		var line = _primary_tethers[enemy]
 		if is_instance_valid(line):
