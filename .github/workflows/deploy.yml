@@ -15,19 +15,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Godot Web Export
-        uses: firebelley/godot-export@v8.0.0
-        with:
-          # Use Godot 4.6.3-stable from GitHub Releases to avoid TuxFamily network timeouts
-          godot_executable_download_url: https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip
-          godot_export_templates_download_url: https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz
-          relative_project_path: ./
-          archive_output: false
-          cache: true
+      - name: Setup Godot and Templates
+        run: |
+          # Create the correct directory expected by Godot 4.6
+          mkdir -p ~/.local/share/godot/export_templates/4.6.3.stable
+          
+          # Download Godot Editor
+          echo "Downloading Godot Editor..."
+          curl -L -o godot.zip https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip
+          unzip godot.zip
+          chmod +x Godot_v4.6.3-stable_linux.x86_64
+          
+          # Download Godot Export Templates
+          echo "Downloading Export Templates..."
+          curl -L -o templates.tpz https://github.com/godotengine/godot/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz
+          unzip templates.tpz
+          
+          # Move templates to the correct Godot 4 export_templates directory
+          mv templates/* ~/.local/share/godot/export_templates/4.6.3.stable/
+          
+          # Clean up zip files to save disk space
+          rm godot.zip templates.tpz
+
+      - name: Export Project to Web
+        run: |
+          mkdir -p build/Web
+          ./Godot_v4.6.3-stable_linux.x86_64 --headless --path . --export-release "Web" build/Web/index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: /home/runner/.local/share/godot/builds/Web
+          publish_dir: ./build/Web
           force_orphan: true
