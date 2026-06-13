@@ -46,8 +46,8 @@ func _ready() -> void:
 
 # --- PUBLIC API ---
 # Called by player.gd when a level-up occurs.
-# Freezes the game world, generates 3 random upgrade cards, and displays them.
-func open_menu(level: int) -> void:
+# Freezes the game world, generates 3 filtered upgrade cards, and displays them.
+func open_menu(level: int, player_roster: Array[String] = []) -> void:
 	# 1. Freeze the entire game physics and processing
 	get_tree().paused = true
 	
@@ -61,8 +61,8 @@ func open_menu(level: int) -> void:
 	# 4. Wait one frame for queue_free to process before adding new cards
 	await get_tree().process_frame
 	
-	# 5. Shuffle the pool and pick up to 3 unique upgrades
-	var available: Array[UpgradeResource] = upgrade_pool.duplicate()
+	# 5. Build a filtered pool using level-based gating rules
+	var available: Array[UpgradeResource] = _build_filtered_pool(level, player_roster)
 	available.shuffle()
 	
 	var count: int = mini(3, available.size())
@@ -75,6 +75,57 @@ func open_menu(level: int) -> void:
 	
 	# 6. Show the menu overlay
 	show()
+
+# --- UPGRADE GATING ---
+# Filters the upgrade pool based on player level and roster composition.
+# Gating rules:
+#   Levels 1-3: Base stats only (Speed, Heal, Max HP, Attack Speed)
+#   Levels 4-6: Above + Global modifiers (Projectiles, Fire Rate, AoE, Velocity)
+#   Levels 7+:  Above + Companion unlocks
+#   Any level:  Companion buffs only if that companion is in the roster
+#   Companion unlocks are removed if already owned
+func _build_filtered_pool(level: int, player_roster: Array[String]) -> Array[UpgradeResource]:
+	var filtered: Array[UpgradeResource] = []
+	
+	# Map evolved forms back to base forms for roster checking
+	var base_roster: Array[String] = []
+	for creature in player_roster:
+		match creature:
+			"raticate": base_roster.append("rattata")
+			"golbat": base_roster.append("zubat")
+			"starmie": base_roster.append("staryu")
+			"graveler": base_roster.append("geodude")
+			"raichu": base_roster.append("pikachu")
+			_: base_roster.append(creature)
+	
+	for upgrade in upgrade_pool:
+		match upgrade.type:
+			# BASE STATS — always available
+			UpgradeResource.UpgradeType.PLAYER_SPEED, \
+			UpgradeResource.UpgradeType.CREATURE_ATTACK_SPEED, \
+			UpgradeResource.UpgradeType.HEAL_PLAYER, \
+			UpgradeResource.UpgradeType.MAX_HEALTH:
+				filtered.append(upgrade)
+			
+			# GLOBAL MODIFIERS — available from level 4+
+			UpgradeResource.UpgradeType.GLOBAL_PROJECTILES, \
+			UpgradeResource.UpgradeType.GLOBAL_FIRE_RATE, \
+			UpgradeResource.UpgradeType.GLOBAL_AOE_RADIUS, \
+			UpgradeResource.UpgradeType.GLOBAL_VELOCITY:
+				if level >= 4:
+					filtered.append(upgrade)
+			
+			# COMPANION UNLOCKS — available from level 7+, only if not already owned
+			UpgradeResource.UpgradeType.UNLOCK_CREATURE:
+				if level >= 7 and not base_roster.has(upgrade.creature_id):
+					filtered.append(upgrade)
+			
+			# COMPANION BUFFS — only if that companion is in the roster
+			UpgradeResource.UpgradeType.COMPANION_BUFF:
+				if base_roster.has(upgrade.creature_id):
+					filtered.append(upgrade)
+	
+	return filtered
 
 # --- INTERNAL HANDLER ---
 # Called when any card is clicked. Forwards the data and unpauses.

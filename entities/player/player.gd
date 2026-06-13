@@ -7,10 +7,10 @@ signal died
 
 # --- MOVEMENT ---
 # Changed from 'const' to 'var' so that upgrades can modify it at runtime.
-var speed: float = 300.0                  # Movement speed in pixels per second
+@export var speed: float = 300.0                  # Movement speed in pixels per second
 
 # --- HEALTH ARCHITECTURE ---
-var max_health: int = 100
+@export var max_health: int = 100
 var current_health: int = 100
 
 # @onready variables wait until the scene tree is fully loaded before trying to locate paths.
@@ -21,7 +21,7 @@ var current_health: int = 100
 # --- XP ARCHITECTURE ---
 var current_level: int = 1
 var current_xp: int = 0
-var xp_to_next_level: int = 100            # Total XP required to reach the next level
+@export var xp_to_next_level: int = 100            # Total XP required to reach the next level
 @onready var xp_bar: ProgressBar = $"../CanvasLayer/XPBar"
 
 # --- UPGRADE SYSTEM ---
@@ -34,6 +34,7 @@ var xp_to_next_level: int = 100            # Total XP required to reach the next
 # --- KILL COUNTER ---
 var kill_count: int = 0
 @onready var kill_label: Label = $"../CanvasLayer/KillLabel"
+@onready var stats_label: Label = $"../CanvasLayer/StatsLabel"
 
 # --- COMPANION ROSTER ---
 @onready var companion_label: Label = $"../CanvasLayer/CompanionLabel"
@@ -50,12 +51,16 @@ func get_companion_upgrade_count(base_id: String) -> int:
 @onready var sprite: Sprite2D = $Sprite2D
 var _was_moving: bool = false
 var _base_sprite_scale: Vector2 = Vector2(96, 96)
-var deadzone_radius: float = 50.0
+@export var deadzone_radius: float = 120.0
 
 # --- SWAP & WEAPON STATE ---
 var swap_cooldown_timer: float = 0.0
-var swap_cooldown_duration: float = 1.5
+@export var swap_cooldown_duration: float = 1.5
 var active_weapon: Node2D = null
+
+# --- DEBUG ---
+var auto_fire: bool = false
+var debug_mode: bool = false
 
 
 func _ready() -> void:
@@ -129,6 +134,7 @@ func _physics_process(delta: float) -> void:
 	sprite.scale = sprite.scale.lerp(_base_sprite_scale, 10.0 * delta)
 	
 	move_and_slide()
+	_update_stats_hud()
 
 # --- INPUT HANDLING ---
 func _unhandled_input(event: InputEvent) -> void:
@@ -142,6 +148,21 @@ func _unhandled_input(event: InputEvent) -> void:
 	
 	if is_right_click or is_cycle_key:
 		cycle_creature()
+
+	# Debug: Toggle auto-fire
+	if event is InputEventKey and event.keycode == KEY_F and event.pressed and not event.echo:
+		auto_fire = !auto_fire
+		print("[Debug] Auto-fire: ", auto_fire)
+
+	# Debug: Instant level-up
+	if event is InputEventKey and event.keycode == KEY_L and event.pressed and not event.echo:
+		gain_xp(xp_to_next_level - current_xp)
+		print("[Debug] Instant level-up triggered!")
+
+	# Debug: Toggle auto-upgrade
+	if event is InputEventKey and event.keycode == KEY_U and event.pressed and not event.echo:
+		debug_mode = !debug_mode
+		print("[Debug] Auto-upgrade: ", debug_mode)
 
 
 func cycle_creature() -> void:
@@ -255,7 +276,15 @@ func level_up() -> void:
 	_spawn_level_up_particles()
 	
 	# Trigger the Tactical Pause — freeze the world and show upgrade cards
-	upgrade_menu.open_menu(current_level)
+	if debug_mode:
+		# Auto-select a random upgrade instead of showing the menu
+		var pool = upgrade_menu.upgrade_pool.duplicate()
+		pool.shuffle()
+		if pool.size() > 0:
+			_on_upgrade_menu_upgrade_selected(pool[0])
+			print("[Debug] Auto-selected upgrade: ", pool[0].title)
+		return
+	upgrade_menu.open_menu(current_level, roster)
 
 func _spawn_level_up_particles() -> void:
 	var particles: CPUParticles2D = CPUParticles2D.new()
@@ -481,3 +510,43 @@ func register_kill() -> void:
 	# Subtle camera shake on each kill for micro-feedback
 	if camera.has_method("add_trauma"):
 		camera.add_trauma(0.1)
+
+# =========================================================
+# LIVE STATS HUD
+# =========================================================
+
+func _update_stats_hud() -> void:
+	if stats_label == null:
+		return
+	var weapon_name = "Maglev Cube" if GlobalStats.selected_character == "vaibhav" else "Deck"
+	var companion_name = roster[active_creature_index].to_upper() if roster.size() > 0 else "NONE"
+	stats_label.text = """🎯 Projectiles: %d
+⚡ Fire Rate: %.2fx
+💥 AoE: %.2fx
+🚀 Velocity: %.2fx
+🏃 Speed: %d
+❤️ HP: %d/%d
+🐾 Active: %s
+⚔️ Weapon: %s
+🎮 Level: %d""" % [
+		GlobalStats.global_projectiles,
+		GlobalStats.global_fire_rate_mult,
+		GlobalStats.global_aoe_radius,
+		GlobalStats.global_velocity_mult,
+		int(speed),
+		current_health, max_health,
+		companion_name,
+		weapon_name,
+		current_level
+	]
+	if auto_fire:
+		stats_label.text += "\n🔫 AUTO-FIRE ON"
+	if debug_mode:
+		stats_label.text += "\n🤖 AUTO-UPGRADE ON"
+
+# =========================================================
+# DEBUG HELPERS
+# =========================================================
+
+func is_firing() -> bool:
+	return auto_fire or Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)

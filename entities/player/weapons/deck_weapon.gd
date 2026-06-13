@@ -13,7 +13,7 @@ func _physics_process(delta: float) -> void:
 		cooldown_timer -= delta
 		
 	# Check if the player is holding LMB
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not get_tree().paused:
+	if _is_player_firing() and not get_tree().paused:
 		if cooldown_timer <= 0.0:
 			_fire_shot()
 
@@ -65,3 +65,9 @@ func _fire_shot() -> void:
 		
 		# Add card to the World scene tree (sibling of Player)
 		get_parent().get_parent().add_child(card)
+
+func _is_player_firing() -> bool:
+	var p = get_parent()
+	if p != null and p.has_method("is_firing"):
+		return p.is_firing()
+	return Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)

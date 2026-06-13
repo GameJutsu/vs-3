@@ -3,6 +3,12 @@ extends Node2D
 ## Orchestrates the main game loop: manages the survival timer countdown, handles
 ## game completion states (GameOver / Victory overlays), and delegates enemy spawning.
 
+# --- MAP & ENVIRONMENT SETTINGS ---
+const TREE_SCENE: PackedScene = preload("res://entities/environment/tree_obstacle.tscn")
+@export var map_half_size: float = 2000.0  # Map goes from -2000 to +2000 on each axis
+@export var tree_count: int = 40
+@export var tree_min_distance_from_center: float = 300.0  # No trees near player spawn
+
 # --- CHILD NODE REFERENCES ---
 @onready var player: CharacterBody2D = $Player
 @onready var wave_manager: Node = $WaveManager
@@ -17,6 +23,7 @@ extends Node2D
 var time_remaining: float = 300.0   # 5-minute countdown (300 seconds)
 var is_game_over: bool = false
 var _boss_spawned: bool = false
+var minimap: MinimapDisplay = null
 
 # --- INITIALIZATION ---
 func _ready() -> void:
@@ -40,6 +47,11 @@ func _ready() -> void:
 	$CanvasLayer/GameOverScreen/VBox/HBox/MenuBtn.pressed.connect(_on_menu_pressed)
 	$CanvasLayer/VictoryScreen/VBox/HBox/PlayAgainBtn.pressed.connect(_on_retry_pressed)
 	$CanvasLayer/VictoryScreen/VBox/HBox/MenuBtn.pressed.connect(_on_menu_pressed)
+	
+	# Phase 5: World boundaries, trees, and minimap
+	_setup_map_boundaries()
+	_scatter_trees()
+	_setup_minimap()
 
 # --- FRAME UPDATE ---
 func _process(delta: float) -> void:
@@ -54,6 +66,11 @@ func _process(delta: float) -> void:
 	
 	# Update boss health bar if a boss is alive
 	_update_boss_health_bar()
+	
+	# Clamp player inside boundaries (safety net)
+	var margin = 20.0
+	player.global_position.x = clampf(player.global_position.x, -map_half_size + margin, map_half_size - margin)
+	player.global_position.y = clampf(player.global_position.y, -map_half_size + margin, map_half_size - margin)
 
 # --- BOSS HEALTH BAR & VICTORY TRIGGER ---
 # Scans the scene for any node in the "boss" group.
@@ -108,3 +125,58 @@ func _on_retry_pressed() -> void:
 func _on_menu_pressed() -> void:
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/main_menu/main_menu.tscn")
+
+# --- MAP BOUNDARIES ---
+func _setup_map_boundaries() -> void:
+	# Create 4 invisible walls at the edges of the map
+	var wall_data = [
+		{"name": "WallTop", "pos": Vector2(0, -map_half_size), "size": Vector2(map_half_size * 2 + 100, 50)},
+		{"name": "WallBottom", "pos": Vector2(0, map_half_size), "size": Vector2(map_half_size * 2 + 100, 50)},
+		{"name": "WallLeft", "pos": Vector2(-map_half_size, 0), "size": Vector2(50, map_half_size * 2 + 100)},
+		{"name": "WallRight", "pos": Vector2(map_half_size, 0), "size": Vector2(50, map_half_size * 2 + 100)},
+	]
+	for data in wall_data:
+		var wall = StaticBody2D.new()
+		wall.name = data["name"]
+		wall.position = data["pos"]
+		var col = CollisionShape2D.new()
+		var shape = RectangleShape2D.new()
+		shape.size = data["size"]
+		col.shape = shape
+		wall.add_child(col)
+		add_child(wall)
+
+func _draw() -> void:
+	# Draw map border - visible boundary indicator
+	var rect = Rect2(-map_half_size, -map_half_size, map_half_size * 2, map_half_size * 2)
+	draw_rect(rect, Color(0.4, 0.15, 0.15, 0.6), false, 4.0)
+	# Draw a subtle fill for the play area
+	draw_rect(rect, Color(0.08, 0.1, 0.06, 0.15), true)
+
+# --- TREE SCATTERING ---
+func _scatter_trees() -> void:
+	for i in range(tree_count):
+		var pos = Vector2(
+			randf_range(-map_half_size + 100, map_half_size - 100),
+			randf_range(-map_half_size + 100, map_half_size - 100)
+		)
+		# Don't spawn trees near center where player starts
+		if pos.length() < tree_min_distance_from_center:
+			continue
+		var tree = TREE_SCENE.instantiate()
+		tree.global_position = pos
+		add_child(tree)
+
+# --- MINIMAP ---
+func _setup_minimap() -> void:
+	minimap = MinimapDisplay.new()
+	minimap.map_half_size = map_half_size
+	minimap.player_ref = player
+	# Position in top-right corner
+	minimap.anchor_left = 1.0
+	minimap.anchor_right = 1.0
+	minimap.offset_left = -170
+	minimap.offset_top = 45
+	minimap.offset_right = -20
+	minimap.offset_bottom = 195
+	$CanvasLayer.add_child(minimap)

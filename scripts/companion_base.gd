@@ -10,9 +10,10 @@ const PROJECTILE_SCENE: PackedScene = preload("res://entities/creature/projectil
 
 # --- EXPORTED PARAMETERS ---
 @export var follow_speed: float = 5.0
-@export var follow_distance: float = 60.0
+@export var follow_distance: float = 100.0
 @export var base_damage: int = 20
 @export var base_cooldown: float = 1.0
+@export var min_separation: float = 45.0      # Minimum distance from player to prevent overlap
 
 # --- PLAYER REF ---
 var target_node: CharacterBody2D = null
@@ -44,6 +45,14 @@ func _follow_player(delta: float) -> void:
 	# Lerp towards player target leash point
 	var speed_multiplier: float = GlobalStats.global_velocity_mult
 	global_position = global_position.lerp(target_position, follow_speed * speed_multiplier * delta)
+	
+	# Anti-overlap: enforce minimum separation from player
+	var dist_to_player: float = global_position.distance_to(target_node.global_position)
+	if dist_to_player < min_separation:
+		var push_dir: Vector2 = target_node.global_position.direction_to(global_position)
+		if push_dir == Vector2.ZERO:
+			push_dir = Vector2.RIGHT  # Fallback if exactly overlapping
+		global_position = target_node.global_position + push_dir * min_separation
 
 func _custom_process(_delta: float) -> void:
 	pass

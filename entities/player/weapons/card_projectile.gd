@@ -3,8 +3,8 @@ extends Area2D
 ## Fired by Rishu's Deck weapon. Red cards pierce. Black cards orbit before firing.
 
 # --- CONFIGURATION ---
-var speed: float = 600.0
-var damage: float = 25.0
+@export var speed: float = 600.0
+@export var damage: float = 25.0
 var direction: Vector2 = Vector2.RIGHT
 var is_red: bool = true
 
@@ -12,9 +12,9 @@ var is_red: bool = true
 var orbiting: bool = false
 var orbit_center: Node2D = null
 var orbit_angle: float = 0.0
-var orbit_radius: float = 65.0
-var orbit_speed: float = 6.0
-var orbit_duration: float = 1.0
+@export var orbit_radius: float = 65.0
+@export var orbit_speed: float = 6.0
+@export var orbit_duration: float = 1.0
 var orbit_timer: float = 0.0
 
 # --- DATA TRACKING ---

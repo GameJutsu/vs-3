@@ -8,15 +8,15 @@ enum State { IDLE, SOLVING, LAUNCHED, RETURNING }
 var state: State = State.IDLE
 
 # --- CORE SETTINGS ---
-var base_damage: float = 120.0
-var base_launch_speed: float = 1200.0
-var base_wind_up_duration: float = 0.85 # Time in seconds to "solve" the cube
-var base_explosion_radius: float = 140.0
+@export var base_damage: float = 120.0
+@export var base_launch_speed: float = 1200.0
+@export var base_wind_up_duration: float = 0.85 # Time in seconds to "solve" the cube
+@export var base_explosion_radius: float = 140.0
 
 # --- MATH & LEASHING ---
 var idle_orbit_angle: float = 0.0
-var idle_orbit_speed: float = 2.5
-var idle_orbit_radius: float = 55.0
+@export var idle_orbit_speed: float = 2.5
+@export var idle_orbit_radius: float = 55.0
 
 # --- INTERNAL STATE ---
 var wind_up_timer: float = 0.0
@@ -50,7 +50,7 @@ func _physics_process(delta: float) -> void:
 			scale = scale.lerp(Vector2.ONE, 10.0 * delta)
 			
 			# Transition to solving if LMB is held
-			if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT) and not get_tree().paused:
+			if _is_player_firing() and not get_tree().paused:
 				state = State.SOLVING
 				wind_up_timer = 0.0
 				SoundManager.play_sound("maglev_solve")
@@ -71,7 +71,7 @@ func _physics_process(delta: float) -> void:
 			scale = Vector2.ONE * (1.0 + 0.5 * sin(wind_up_timer * 25.0) * progress)
 			
 			# If player releases LMB before solved, revert to idle
-			if not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+			if not _is_player_firing():
 				state = State.IDLE
 				scale = Vector2.ONE
 			# Once fully solved, launch!
@@ -246,3 +246,8 @@ func _draw() -> void:
 	
 	# Draw a glowing center dot
 	draw_circle(Vector2.ZERO, 3.0, line_color)
+
+func _is_player_firing() -> bool:
+	if player != null and player.has_method("is_firing"):
+		return player.is_firing()
+	return Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT)

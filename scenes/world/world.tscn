@@ -143,6 +143,21 @@ theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 18
 text = "🐾 ROSTER: [BRAWLER]"
 
+[node name="StatsLabel" type="Label" parent="CanvasLayer"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -180.0
+offset_right = 280.0
+offset_bottom = -10.0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.8, 0.9, 0.8, 0.85)
+theme_override_colors/font_outline_color = Color(0.0, 0.0, 0.0, 1.0)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 14
+text = "Stats Loading..."
+
 [node name="GameOverScreen" type="ColorRect" parent="CanvasLayer"]
 process_mode = 3
 visible = false
