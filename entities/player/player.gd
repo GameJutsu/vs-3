@@ -45,6 +45,11 @@ var active_creature_index: int = 0
 @onready var sprite: Sprite2D = $Sprite2D
 var _was_moving: bool = false
 var _base_sprite_scale: Vector2 = Vector2(96, 96)
+var deadzone_radius: float = 50.0
+
+# --- SWAP & WEAPON STATE ---
+var swap_cooldown_timer: float = 0.0
+var swap_cooldown_duration: float = 1.5
 
 # --- INITIALIZATION ---
 # _ready() is called once when the node and its children enter the scene tree.
@@ -64,30 +69,41 @@ func _ready() -> void:
 # _physics_process(delta) is called at a fixed frame rate (default 60Hz) for physics calculations.
 # This makes physics calculations deterministic and independent of graphics rendering speed.
 func _physics_process(delta: float) -> void:
-	# Input.get_vector() listens for keypresses corresponding to the 4 directions.
-	var direction: Vector2 = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
-	
-	# Squash & Stretch Logic (relative to player's base scale)
-	var is_moving: bool = direction.length_squared() > 0.0
-	if is_moving and not _was_moving:
-		# Stretch in direction of movement
-		if abs(direction.x) > abs(direction.y):
-			sprite.scale = _base_sprite_scale * Vector2(1.15, 0.85)
-		else:
-			sprite.scale = _base_sprite_scale * Vector2(0.85, 1.15)
-	elif not is_moving and _was_moving:
-		# Squash when coming to a halt
-		sprite.scale = _base_sprite_scale * Vector2(0.82, 1.18)
+	# Decrement swap cooldown timer
+	if swap_cooldown_timer > 0.0:
+		swap_cooldown_timer = maxf(swap_cooldown_timer - delta, 0.0)
 		
+	# --- MOUSE DEADZONE MOVEMENT ---
+	var mouse_pos: Vector2 = get_global_mouse_position()
+	var offset_to_mouse: Vector2 = mouse_pos - global_position
+	var dist_to_mouse: float = offset_to_mouse.length()
+	var direction: Vector2 = offset_to_mouse.normalized()
+	
+	var is_moving: bool = dist_to_mouse > deadzone_radius
+	
+	if is_moving:
+		velocity = direction * speed
+		# Face mouse cursor
+		sprite.rotation = direction.angle()
+		
+		# Stretch along direction of motion
+		if not _was_moving:
+			sprite.scale = _base_sprite_scale * Vector2(1.15, 0.85)
+	else:
+		velocity = Vector2.ZERO
+		# Face mouse cursor even when stopped
+		if dist_to_mouse > 5.0:
+			sprite.rotation = direction.angle()
+			
+		# Squash when coming to a halt
+		if _was_moving:
+			sprite.scale = _base_sprite_scale * Vector2(0.82, 1.18)
+			
 	_was_moving = is_moving
 	
 	# Lerp scale back to normal base scale
 	sprite.scale = sprite.scale.lerp(_base_sprite_scale, 10.0 * delta)
 	
-	# 'velocity' is a built-in property of CharacterBody2D.
-	velocity = direction * speed
-	
-	# move_and_slide() is a built-in method that moves the body along the velocity vector,
 	move_and_slide()
 
 # --- INPUT HANDLING ---
@@ -96,7 +112,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if get_tree().paused:
 		return
 		
-	# Cycle creature on Right Click, Spacebar, or C Key
+	# LMB Weapon Fire Trigger
+	var is_left_click: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed
+	if is_left_click:
+		trigger_weapon()
+		
+	# Cycle companion on RMB Click, Spacebar, or C Key
 	var is_right_click: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed
 	var is_cycle_key: bool = event is InputEventKey and (event.keycode == KEY_SPACE or event.keycode == KEY_C) and event.pressed
 	
@@ -107,6 +128,15 @@ func cycle_creature() -> void:
 	if roster.size() <= 1:
 		return
 		
+	# Check swap cooldown
+	if swap_cooldown_timer > 0.0:
+		var label: Label = preload("res://ui/damage_number.tscn").instantiate()
+		label.text = "SWAP COOLDOWN!"
+		label.modulate = Color(1.0, 0.3, 0.3, 1.0)
+		label.global_position = global_position + Vector2(-60, -50)
+		get_parent().call_deferred("add_child", label)
+		return
+		
 	active_creature_index = (active_creature_index + 1) % roster.size()
 	var next_creature_type: String = roster[active_creature_index]
 	
@@ -114,9 +144,21 @@ func cycle_creature() -> void:
 		creature.set_archetype(next_creature_type)
 		print("[Player] Swapped active companion to: ", next_creature_type)
 	
+	# Reset swap cooldown timer
+	swap_cooldown_timer = swap_cooldown_duration
+	
 	# Play companion cycle sound
 	SoundManager.play_sound("swap_companion")
 	update_companion_hud()
+
+func trigger_weapon() -> void:
+	print("[Player] Triggered weapon! (Placeholder for Phase 3)")
+	var label: Label = preload("res://ui/damage_number.tscn").instantiate()
+	label.text = "PEW!"
+	label.modulate = Color(0.0, 0.85, 0.9, 1.0)
+	label.global_position = global_position + Vector2(-20, -50)
+	get_parent().call_deferred("add_child", label)
+	SoundManager.play_sound("shoot_projectile")
 
 # =========================================================
 # DAMAGE & DEATH LOGIC

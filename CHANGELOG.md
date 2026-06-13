@@ -4,6 +4,15 @@ All notable changes to this project are documented in this file. The project adh
 
 ---
 
+## [v1.8.0] - 2026-06-13
+### Added
+- Created [global_stats.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scripts/global_stats.gd) Autoload singleton and registered it in [project.godot](file:///home/deck/Game%20Dev/vs3/vs-3/project.godot) to hold global parameters.
+- Implemented **The Deadzone Tether** mouse movement, stop threshold, and sprite rotation in [player.gd](file:///home/deck/Game%20Dev/vs3/vs-3/entities/player/player.gd).
+- Hooked up `LMB` weapon trigger event and added a responsive attack pop and audio cue player.
+- Implemented a 1.5-second swap cooldown timer on companion swapping to prevent rapid-cycle exploits.
+
+---
+
 ## [v1.7.0] - 2026-06-13
 ### Added
 - Created a stylized startup scene [main_menu.tscn](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/main_menu/main_menu.tscn) and [main_menu.gd](file:///home/deck/Game%20Dev/vs3/vs-3/scenes/main_menu/main_menu.gd) supporting Start Run and Quit options.

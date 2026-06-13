@@ -148,11 +148,11 @@ res://
 
 - [x] Player 8-way movement with `CharacterBody2D` + `move_and_slide()`
 - [x] Camera2D with trauma-based screen shake attached to player
-- [x] Tag-Team Roster system with single-action cycling (Right-Click/Space/C Key)
-- [x] Four distinct companion types (Brawler, Sniper, Orbiter, Healer)
-- [x] Swap Entrance Effects (Shockwave stun, Bullet nova, Shield speed boost, HP heal burst)
-- [x] Companion upgrade card drops (Unlock Sniper, Unlock Orbiter, Unlock Healer)
-- [x] Companion roster HUD panel display showing current active status
+- [x] Mouse-driven Deadzone movement system & sprite rotation
+- [x] Single-action tag-team companion cycling (Right-Click/Space/C Key)
+- [x] Swap Cooldown timer (1.5 seconds) to prevent swap spam
+- [x] Weapon Fire Trigger input (LMB click) with visual pop feedback
+- [x] GlobalStats Autoload singleton to manage shared math
 - [x] WaveManager-based escalation (dynamic enemy pools & speed scaling)
 - [x] Five distinct enemy profiles (Grunt, Sprinter, Tank, Splitter, Splitling)
 - [x] Climax Boss Encounter (Gym Leader) scene & health bar tracker
@@ -171,8 +171,21 @@ res://
 
 ## 7. Development Roadmap 🚀
 
-### Phase 4: Remaining Juice & Polish (NEXT)
-- [ ] Squash-and-stretch on player movement changes (already baseline added, can refine)
-- [ ] Particle emitters for gem pickup and level-up (already baseline added)
-- [ ] Audio asset compilation: drop WAVs in assets/sounds/ to activate hookups
+### Phase 2: Roster Manager & Companion Systems (NEXT)
+- [ ] Build `RosterManager` node to manage Slot 0, 1, and 2 active states
+- [ ] Program 5 companion Pokémon and their evolved variants:
+  - Rattata → Raticate (dash/bite + magnet radius)
+  - Zubat → Golbat (leach drain beam + chain tethers)
+  - Staryu → Starmie (orbit bullet circle + orbital sweep laser)
+  - Geodude → Graveler (knockback punch + earthquake stun)
+  - Pikachu → Raichu (random lightning strikes + hazard ground fields)
+
+### Phase 3: Character Selection & Weapon Systems
+- [ ] Add character choice (Vaibhav / Rishu) to Main Menu
+- [ ] Build Vaibhav's **Maglev Cube** weapon (charge, launch target detonation, return)
+- [ ] Build Rishu's **Deck** weapon (rapid pierce red cards, orbital shield black cards)
+
+### Phase 4: Upgrade Pool & Evolution Engine
+- [ ] Refactor `UpgradeResource` to support global stats modifiers
+- [ ] Implement evolution trigger when companion upgrades reach exactly 2 count
 

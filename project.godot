@@ -28,3 +28,4 @@ renderer/rendering_method.mobile="gl_compatibility"
 [autoload]
 
 SoundManager="*res://scripts/sound_manager.gd"
+GlobalStats="*res://scripts/global_stats.gd"
