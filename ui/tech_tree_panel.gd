@@ -17,33 +17,29 @@ var columns = [
 	{
 		"name": "AGILITY",
 		"upgrades": [
-			{"id": "speed_boost", "title": "Swift Wings", "desc": "+50 Player Speed"},
-			{"id": "upgrade_global_velocity", "title": "Tailwind", "desc": "+30% Global Velocity"},
-			{"id": "buff_zubat", "title": "Echo-Location", "desc": "Zubat Projectile +1"}
+			{"id": "speed_boost", "title": "Swift Wings", "desc": "+20% Player Speed"},
+			{"id": "upgrade_global_velocity", "title": "Kinetic Boost", "desc": "+25% Global Speed"}
 		]
 	},
 	{
 		"name": "SURVIVABILITY",
 		"upgrades": [
-			{"id": "max_health", "title": "Iron Shell", "desc": "+50 Max HP"},
-			{"id": "heal", "title": "Nanite Pulse", "desc": "Restore +30 HP"},
-			{"id": "buff_geodude", "title": "Solid Rock", "desc": "Geodude Defense Buff"}
+			{"id": "max_health", "title": "Iron Constitution", "desc": "+25 Max HP"},
+			{"id": "heal", "title": "Healing Pulse", "desc": "Restore +30 HP"}
 		]
 	},
 	{
 		"name": "FIREPOWER",
 		"upgrades": [
-			{"id": "upgrade_global_fire_rate", "title": "Overcharge", "desc": "+25% Fire Rate"},
-			{"id": "upgrade_global_projectiles", "title": "Split Fire", "desc": "+1 Projectile"},
-			{"id": "buff_pikachu", "title": "Volt Tackle", "desc": "Pikachu Bolt Chain +1"}
+			{"id": "upgrade_global_fire_rate", "title": "Overclock", "desc": "+35% Fire Rate"},
+			{"id": "upgrade_global_projectiles", "title": "Split Core", "desc": "+1 Projectile"}
 		]
 	},
 	{
 		"name": "SPACE",
 		"upgrades": [
-			{"id": "upgrade_global_aoe_radius", "title": "Expansion", "desc": "+30% AoE Radius"},
-			{"id": "attack_speed", "title": "Blitz Lunge", "desc": "+15% Companion Speed"},
-			{"id": "buff_staryu", "title": "Cosmic Star", "desc": "Staryu AoE +40%"}
+			{"id": "upgrade_global_aoe_radius", "title": "Nova Expansion", "desc": "+30% AoE Radius"},
+			{"id": "attack_speed", "title": "Feral Instinct", "desc": "+30% Companion Freq"}
 		]
 	}
 ]
